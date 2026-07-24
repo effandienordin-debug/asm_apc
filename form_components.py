@@ -132,10 +132,7 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     st.divider()
     
     # --- REMARKS ---
-    st.subheader("💡 Ulasan")
-    
-    prev_remark = rev_metadata.get('overall_justification', "")
-    remark_val = st.text_area("Ulasan / Komen (Wajib)", value=prev_remark, height=150, disabled=disabled, placeholder="Sila berikan ulasan anda mengenai calon ini...")
+    # Ulasan / Komen removed as requested.
     
     return {
         "responses": {
@@ -147,5 +144,5 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
             "total_score": total_score
         },
         "recommendation": "SUPPORT", # Defaulting to SUPPORT in DB since we removed it from UI
-        "justification": remark_val
+        "justification": "" # Defaulting to empty string since we removed it from UI
     }

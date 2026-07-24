@@ -57,9 +57,9 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
         # BUTTONS (Extracted from form for flexibility)
         if not is_locked:
             if st.button("💾 Simpan Draf", use_container_width=True, type="primary"):
-                is_incomplete = not res["justification"].strip()
+                is_incomplete = False
                 if is_incomplete:
-                    st.error("🚨 Sila isikan ulasan (Remarks/Comments) sebelum menyimpan.")
+                    st.error("🚨 Sila isikan markah sebelum menyimpan.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -75,9 +75,9 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                     st.rerun() # Stay on the page
 
             if st.button("🚀 Hantar Penilaian Akhir", use_container_width=True, type="secondary"):
-                is_incomplete = not res["justification"].strip()
+                is_incomplete = False
                 if is_incomplete:
-                    st.error("🚨 Sila isikan ulasan (Remarks/Comments) sebelum menghantar.")
+                    st.error("🚨 Sila isikan markah sebelum menghantar.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -131,8 +131,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                                         st.markdown(f"**Jumlah Markah:** {total} / 25")
                                     except: pass
 
-                                    justification = r_data.get('overall_justification')
-                                    if justification: st.caption(f"**💬 Comments:** {justification[:50]}...")
+                                    # Removed justification/remarks display
                                 else:
                                     st.markdown("**Status:** :orange[⏳ Awaiting Review]")
 

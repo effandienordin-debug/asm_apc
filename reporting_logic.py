@@ -9,9 +9,6 @@ def get_report_data(_engine):
         SELECT 
             r.applicant_name,
             COALESCE(rev.full_name, r.reviewer_username) as reviewer_name,
-            r.final_recommendation,
-            r.is_final,
-            r.overall_justification,
             r.responses
         FROM reviews r
         LEFT JOIN reviewers rev ON r.reviewer_username = rev.username
@@ -58,25 +55,25 @@ def render_reporting(engine):
         </style>
     """, unsafe_allow_html=True)
 
-    st.header("📄 APC Evaluation Reporting Center")
+    st.header("📄 Laporan Penilaian APC")
     df = get_report_data(engine)
 
     if df.empty:
-        st.info("No data available yet.")
+        st.info("Tiada data setakat ini.")
         return
 
     # --- 2. FILTERS (Hides in Print automatically due to .stButton/expander logic) ---
-    with st.expander("🔍 Filter Results"):
-        c1, c2 = st.columns(2)
-        f_rec = c1.multiselect("Recommendation", df['final_recommendation'].unique(), default=df['final_recommendation'].unique())
-        f_rev = c2.multiselect("Reviewer", df['reviewer_name'].unique(), default=df['reviewer_name'].unique())
+    with st.expander("🔍 Tapis Keputusan"):
+        f_rev = st.multiselect("Penilai", df['reviewer_name'].unique(), default=df['reviewer_name'].unique())
     
-    filtered_df = df[(df['final_recommendation'].isin(f_rec)) & (df['reviewer_name'].isin(f_rev))]
+    filtered_df = df[df['reviewer_name'].isin(f_rev)]
 
     # --- 3. VISUALS ---
-    fig1 = px.pie(filtered_df, names='final_recommendation', title="Overall Recommendation Split")
-    fig2 = px.bar(filtered_df.groupby(['applicant_name', 'final_recommendation']).size().reset_index(name='count'), 
-                  x='applicant_name', y='count', color='final_recommendation', title="Applicant Breakdown")
+    avg_scores = filtered_df.groupby('applicant_name')['total_score'].mean().reset_index()
+    fig1 = px.bar(avg_scores, x='applicant_name', y='total_score', title="Purata Markah Keseluruhan Calon", text_auto=True)
+    
+    review_counts = filtered_df.groupby('applicant_name').size().reset_index(name='count')
+    fig2 = px.bar(review_counts, x='applicant_name', y='count', title="Jumlah Penilaian (Reviews) Diterima", text_auto=True)
 
     col1, col2 = st.columns(2)
     col1.plotly_chart(fig1, use_container_width=True)
@@ -87,18 +84,18 @@ def render_reporting(engine):
     btn_col1, btn_col2 = st.columns(2)
 
     # Print Button
-    if btn_col1.button("🖨️ Generate Professional PDF", use_container_width=True, type="primary"):
+    if btn_col1.button("🖨️ Jana PDF Profesional", use_container_width=True, type="primary"):
         # parent.print() escapes the iframe to print the full page
         st.components.v1.html("""
             <script>
                 window.parent.print();
             </script>
         """, height=0)
-        st.toast("Opening Print Dialog... Select 'Save as PDF'.")
+        st.toast("Membuka tetapan cetakan... Pilih 'Save as PDF'.")
 
     # CSV Button (Aligned perfectly next to Print)
     btn_col2.download_button(
-        label="📊 Download Data (CSV)",
+        label="📊 Muat Turun Data (CSV)",
         data=filtered_df.to_csv(index=False),
         file_name="ASM_APC_Evaluation_Data_Export.csv",
         mime="text/csv",
@@ -106,5 +103,5 @@ def render_reporting(engine):
     )
 
     # --- 5. DATA PREVIEW ---
-    st.subheader("📋 Data Summary")
+    st.subheader("📋 Ringkasan Data")
     st.dataframe(filtered_df, use_container_width=True, hide_index=True)
