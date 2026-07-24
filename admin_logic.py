@@ -23,11 +23,14 @@ def get_local_image_base64(username):
 @st.dialog("📝 Edit Applicant")
 def edit_applicant_dialog(engine, app_data):
     with st.form("edit_app_form"):
-        new_name = st.text_input("Full Name", value=app_data['name'])
-        new_title = st.text_input("Proposal Title", value=app_data['proposal_title'])
-        new_inst = st.text_input("Institution", value=app_data['institution'])
-        new_link = st.text_input("Info Link", value=app_data['info_link'])
-        new_rem = st.text_area("Admin Remarks", value=app_data['remarks'])
+        new_name = st.text_input("Nama Penuh", value=app_data['name'])
+        new_inst = st.text_input("Jawatan", value=app_data['institution'])
+        
+        # Keep old values for hidden fields to avoid DB constraint issues
+        new_title = app_data.get('proposal_title', '')
+        new_link = app_data.get('info_link', '')
+        new_rem = app_data.get('remarks', '')
+        
         if st.form_submit_button("Update Applicant", type="primary"):
             with engine.begin() as conn:
                 conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r WHERE id=:id"),
@@ -52,16 +55,16 @@ def edit_reviewer_dialog(engine, rev_data, hash_password):
 
 @st.dialog("📚 Bulk Add Applicants")
 def bulk_add_applicants_dialog(engine):
-    st.markdown("**Format:** `Name, Proposal Title, Institution, Info Link, Remarks` (One per line)")
-    raw_data = st.text_area("Paste Applicant List Here", height=200)
-    if st.button("Import Applicants", type="primary"):
+    st.markdown("**Format:** `Nama Calon, Jawatan` (Satu baris untuk setiap calon)")
+    raw_data = st.text_area("Tampal senarai calon di sini", height=200)
+    if st.button("Import Calon", type="primary"):
         lines = [line.strip() for line in raw_data.split('\n') if line.strip()]
         with engine.begin() as conn:
             for line in lines:
                 parts = [p.strip() for p in line.split(',')]
-                if len(parts) >= 2:
+                if len(parts) >= 1:
                     conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks) VALUES (:n, :t, :i, :l, :r) ON CONFLICT (name) DO NOTHING"), 
-                                 {"n":parts[0], "t":parts[1], "i":parts[2] if len(parts)>2 else "", "l":parts[3] if len(parts)>3 else "", "r":parts[4] if len(parts)>4 else ""})
+                                 {"n":parts[0], "t":"", "i":parts[1] if len(parts)>1 else "", "l":"", "r":""})
         st.cache_resource.clear(); st.success("✅ Done!"); time.sleep(1); st.rerun()
 
 @st.dialog("📚 Bulk Add Reviewers")
@@ -156,14 +159,14 @@ def render_management(menu, engine, hash_password, delete_item):
         c1, c2 = st.columns(2)
         if c1.button("📚 Bulk Add Applicants", use_container_width=True): bulk_add_applicants_dialog(engine)
         
-        with st.expander("➕ Add Single Applicant"):
+        with st.expander("➕ Tambah Calon Baru"):
             with st.form("add_app_single", clear_on_submit=True):
-                n, t, i = st.text_input("Name*"), st.text_input("Title*"), st.text_input("Institution")
-                l, r = st.text_input("Link"), st.text_area("Remarks")
-                if st.form_submit_button("Save Applicant", type="primary"):
-                    if n and t:
+                n = st.text_input("Nama Calon*")
+                i = st.text_input("Jawatan")
+                if st.form_submit_button("Simpan Calon", type="primary"):
+                    if n:
                         with engine.begin() as conn:
-                            conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks) VALUES (:n, :t, :i, :l, :r)"), {"n":n, "t":t, "i":i, "l":l, "r":r})
+                            conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks) VALUES (:n, :t, :i, :l, :r)"), {"n":n, "t":"", "i":i, "l":"", "r":""})
                         st.cache_resource.clear(); st.success("✅ Added!"); time.sleep(1); st.rerun()
 
         revs_df = pd.read_sql("SELECT username, full_name FROM reviewers", engine)
@@ -175,7 +178,7 @@ def render_management(menu, engine, hash_password, delete_item):
                 ca, cb, cc = st.columns([0.1, 3, 1.2])
                 ca.write(f"{idx+1}")
                 cb.write(f"**{row['name']}**")
-                cb.caption(f"{row['institution']} | {row['proposal_title']}")
+                cb.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
                 
                 ced1, ced2 = cc.columns(2)
                 if ced1.button("📝 Edit", key=f"ed_ap_{row['id']}"): edit_applicant_dialog(engine, row)

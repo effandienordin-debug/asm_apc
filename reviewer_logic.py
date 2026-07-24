@@ -50,10 +50,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
             if app['photo']: col_img.image(bytes(app['photo']), width=150)
 
             col_txt.subheader(name)
-            col_txt.markdown(f"**Institution:** {app['institution'] if app['institution'] else 'N/A'}")
-            col_txt.write(f"**Proposal:** {app['proposal_title']}")
-            if app['remarks']: col_txt.info(f"**Admin Remarks:** {app['remarks']}")
-            col_txt.markdown(f"🔗 [View Documents]({app['info_link']})")
+            col_txt.markdown(f"**Jawatan:** {app['institution'] if app['institution'] else 'N/A'}")
 
         # --- EVALUATION FORM ---
         res = render_apc_evaluation_form(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
@@ -106,7 +103,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                                 else: st.image("https://cdn-icons-png.flaticon.com/512/149/149071.png", use_container_width=True)
 
                                 st.write(f"**{row['name']}**")
-                                st.caption(f"🏫 {row['institution'] if row['institution'] else 'N/A'}")
+                                st.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
 
                                 if row['name'] in reviews_lookup:
                                     r_data = reviews_lookup[row['name']]
