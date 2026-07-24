@@ -18,7 +18,7 @@ def get_assigned_applicants(_engine, username):
 # --- 2. RENDER REVIEW FORM & GALLERY ---
 def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     table_reviews = "reviews"
-    phase_name = "Penilaian 360 Darjah APC"
+    phase_name = "360 Degree APC Evaluation"
 
     st.markdown(f"## 📋 ASM APC: {phase_name}")
     st.info("Reviewers can access the applicants' information and supporting documents via the 'View Documents' Link.")
@@ -50,18 +50,18 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
             if app['photo']: col_img.image(bytes(app['photo']), width=150)
 
             col_txt.subheader(name)
-            col_txt.markdown(f"**Jawatan:** {app['institution'] if app['institution'] else 'N/A'}")
+            col_txt.markdown(f"**Position:** {app['institution'] if app['institution'] else 'N/A'}")
 
         # --- EVALUATION FORM ---
         res = render_apc_evaluation_form(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
 
-        # BUTTONS (Dikeluarkan dari form untuk fleksibiliti)
+        # BUTTONS (Extracted from form for flexibility)
         if not is_locked:
             if st.button("💾 Save Draft", use_container_width=True, type="primary"):
                 is_incomplete = res["recommendation"] is None or not res["justification"].strip()
 
                 if is_incomplete:
-                    st.error("⚠️ Sila jawab semua soalan wajib dan ulasan (SOKONG/TIDAK SOKONG & Justification) sebelum menyimpan.")
+                    st.error("🚨 Please answer all required questions (SUPPORT/DO NOT SUPPORT & Comments) before saving.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -103,16 +103,16 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                                 else: st.image("https://cdn-icons-png.flaticon.com/512/149/149071.png", use_container_width=True)
 
                                 st.write(f"**{row['name']}**")
-                                st.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
+                                st.caption(f"💼 Position: {row['institution'] if row['institution'] else 'N/A'}")
 
                                 if row['name'] in reviews_lookup:
                                     r_data = reviews_lookup[row['name']]
                                     rec = r_data['final_recommendation']
-                                    color = "green" if rec == "SOKONG" else "red"
-                                    st.markdown(f"**Status:** :green[✅ Saved]")
+                                    color = "green" if rec == "SUPPORT" else "red"
+                                    st.markdown(f"**Status:** :green[✅ Completed]")
                                     st.markdown(f"**Recommendation:** :{color}[{rec}]")
 
-                                    # --- TAMBAH INI: Papar Markah ---
+                                    # --- Papar Markah ---
                                     try:
                                         res_data = json.loads(r_data.get('responses', '{}'))
                                         total = res_data.get('total_score', 0)

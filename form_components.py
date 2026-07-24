@@ -2,8 +2,8 @@ import streamlit as st
 from database_utils import get_radio_index
 
 def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
-    st.subheader("📋 Penilaian 360 Darjah (APC-ASM)")
-    st.info("Sila berikan markah (1 - 5) berdasarkan kriteria kecekapan utama di bawah. Markah akan dikira secara automatik.")
+    st.subheader("📋 360 Degree Evaluation (APC-ASM)")
+    st.info("Please provide a score (1 - 5) based on the core competency criteria below. The score will be calculated automatically.")
     
     def get_val(key, default=1):
         val = prev_responses.get(key, default)
@@ -12,13 +12,13 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
         except:
             return 1
             
-    # --- DEFINISI RUBRIK ---
+    # --- RUBRIC DEFINITION ---
     options = [
-        "1 - Tidak Memuaskan",
-        "2 - Memerlukan Penambahbaikan",
-        "3 - Memenuhi Jangkaan",
-        "4 - Melebihi Jangkaan",
-        "5 - Cemerlang"
+        "1 - Unsatisfactory",
+        "2 - Needs Improvement",
+        "3 - Meets Expectations",
+        "4 - Exceeds Expectations",
+        "5 - Excellent"
     ]
     
     def get_index_from_val(val):
@@ -31,65 +31,65 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
 
     st.divider()
     
-    # 1. Daya Kepimpinan
-    st.markdown("### 1. Daya Kepimpinan")
-    st.caption("Berkebolehan memimpin dengan cara yang positif, membina dan memberi arahan mengikut polisi, tatacara dan deskripsi kerja organisasi.")
-    kepimpinan_opt = st.radio("Markah Daya Kepimpinan", options, index=get_index_from_val(get_val('kepimpinan', 1)), disabled=disabled, horizontal=True, key="kepimpinan")
+    # 1. Leadership
+    st.markdown("### 1. Leadership")
+    st.caption("Able to lead in a positive, constructive manner and provide direction in accordance with the organization's policies, procedures, and job descriptions.")
+    kepimpinan_opt = st.radio("Leadership Score", options, index=get_index_from_val(get_val('kepimpinan', 1)), disabled=disabled, horizontal=True, key="kepimpinan")
     kepimpinan_val = val_from_option(kepimpinan_opt)
     
     st.divider()
     
-    # 2. Semangat Berpasukan
-    st.markdown("### 2. Semangat Berpasukan")
-    st.caption("Berkebolehan untuk bekerja secara berkumpulan dan menjalankan tugas secara bekerjasama bagi mencapai matlamat dan menyelesaikan tugas dalam satu pasukan.")
-    pasukan_opt = st.radio("Markah Semangat Berpasukan", options, index=get_index_from_val(get_val('pasukan', 1)), disabled=disabled, horizontal=True, key="pasukan")
+    # 2. Teamwork
+    st.markdown("### 2. Teamwork")
+    st.caption("Able to work in groups and carry out tasks cooperatively to achieve goals and complete tasks within a team.")
+    pasukan_opt = st.radio("Teamwork Score", options, index=get_index_from_val(get_val('pasukan', 1)), disabled=disabled, horizontal=True, key="pasukan")
     pasukan_val = val_from_option(pasukan_opt)
     
     st.divider()
     
-    # 3. Kemahiran Interpersonal
-    st.markdown("### 3. Kemahiran Interpersonal")
-    st.caption("Berkebolehan untuk berinteraksi dengan sikap dan tingkah laku yang positif termasuk cara berkomunikasi yang efektif, penyelesaian masalah yang baik dan kemahiran rundingan yang berkesan.")
-    interpersonal_opt = st.radio("Markah Kemahiran Interpersonal", options, index=get_index_from_val(get_val('interpersonal', 1)), disabled=disabled, horizontal=True, key="interpersonal")
+    # 3. Interpersonal Skills
+    st.markdown("### 3. Interpersonal Skills")
+    st.caption("Able to interact with a positive attitude and behavior, including effective communication, good problem solving, and effective negotiation skills.")
+    interpersonal_opt = st.radio("Interpersonal Skills Score", options, index=get_index_from_val(get_val('interpersonal', 1)), disabled=disabled, horizontal=True, key="interpersonal")
     interpersonal_val = val_from_option(interpersonal_opt)
     
     st.divider()
     
-    # 4. Akauntabiliti
-    st.markdown("### 4. Akauntabiliti")
-    st.caption("Bertanggungjawab ke atas tugas dan keputusan yang dilakukan dan bersedia untuk menerima kesan dan implikasi dari suatu perbuatan atas tindakan yang dilakukannya.")
-    akauntabiliti_opt = st.radio("Markah Akauntabiliti", options, index=get_index_from_val(get_val('akauntabiliti', 1)), disabled=disabled, horizontal=True, key="akauntabiliti")
+    # 4. Accountability
+    st.markdown("### 4. Accountability")
+    st.caption("Responsible for the tasks and decisions made, and ready to accept the consequences and implications of their actions.")
+    akauntabiliti_opt = st.radio("Accountability Score", options, index=get_index_from_val(get_val('akauntabiliti', 1)), disabled=disabled, horizontal=True, key="akauntabiliti")
     akauntabiliti_val = val_from_option(akauntabiliti_opt)
     
     st.divider()
     
-    # 5. Inovatif
-    st.markdown("### 5. Inovatif")
-    st.caption("Berkebolehan menjadi kreatif dan menunjukkan inisiatif untuk menjana pembaharuan atau penambahbaikan organisasi.")
-    inovatif_opt = st.radio("Markah Inovatif", options, index=get_index_from_val(get_val('inovatif', 1)), disabled=disabled, horizontal=True, key="inovatif")
+    # 5. Innovation
+    st.markdown("### 5. Innovation")
+    st.caption("Able to be creative and show initiative to generate innovations or improvements for the organization.")
+    inovatif_opt = st.radio("Innovation Score", options, index=get_index_from_val(get_val('inovatif', 1)), disabled=disabled, horizontal=True, key="inovatif")
     inovatif_val = val_from_option(inovatif_opt)
     
-    # --- PENGIRAAN MARKAH ---
+    # --- SCORE CALCULATION ---
     total_score = kepimpinan_val + pasukan_val + interpersonal_val + akauntabiliti_val + inovatif_val
     
     st.divider()
     st.markdown(f"""
         <div style="background-color:#e1f5fe; padding:20px; border-radius:10px; border-left: 8px solid #0288d1; text-align:center;">
-            <p style="margin:0; font-size:16px; color:#01579b;">Jumlah Markah</p>
+            <p style="margin:0; font-size:16px; color:#01579b;">Total Score</p>
             <h1 style="margin:0; color:#01579b;">{total_score} / 25</h1>
         </div>
     """, unsafe_allow_html=True)
     st.divider()
     
-    # --- REKOMENDASI & ULASAN ---
-    st.subheader("💡 Sokongan & Ulasan Akhir")
+    # --- RECOMMENDATION & REMARKS ---
+    st.subheader("💡 Support & Final Comments")
     prev_rec = rev_metadata.get('final_recommendation')
-    rec_index = 0 if prev_rec == "SOKONG" else 1 if prev_rec == "TIDAK SOKONG" else None
+    rec_index = 0 if prev_rec == "SUPPORT" else 1 if prev_rec == "DO NOT SUPPORT" else None
     
-    rec_val = st.radio("Adakah anda menyokong pencalonan ini untuk APC?", options=["SOKONG", "TIDAK SOKONG"], index=rec_index, disabled=disabled, horizontal=True)
+    rec_val = st.radio("Do you support this nomination for APC?", options=["SUPPORT", "DO NOT SUPPORT"], index=rec_index, disabled=disabled, horizontal=True)
     
     prev_remark = rev_metadata.get('overall_justification', "")
-    remark_val = st.text_area("Ulasan / Komen (Wajib)", value=prev_remark, height=150, disabled=disabled, placeholder="Sila berikan ulasan anda mengenai calon ini...")
+    remark_val = st.text_area("Remarks / Comments (Required)", value=prev_remark, height=150, disabled=disabled, placeholder="Please provide your comments regarding this applicant...")
     
     return {
         "responses": {
