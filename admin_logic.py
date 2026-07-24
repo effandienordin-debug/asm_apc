@@ -194,6 +194,23 @@ def render_management(menu, engine, hash_password, delete_item):
 
     elif menu == "Pengurusan Penilai":
         st.header("👤 Pengurusan Penilai")
+        
+        with st.expander("🔐 Tukar Kata Laluan Admin"):
+            with st.form("change_admin_pass"):
+                new_admin_pass = st.text_input("Kata Laluan Admin Baru", type="password")
+                if st.form_submit_button("Kemaskini Kata Laluan Admin", type="primary"):
+                    if new_admin_pass.strip():
+                        with engine.begin() as conn:
+                            # Update kata laluan untuk user yang sedang login (Admin)
+                            conn.execute(text("UPDATE users SET password_hash=:p WHERE username=:u"), 
+                                         {"p": hash_password(new_admin_pass), "u": st.session_state.username})
+                        st.success("✅ Kata laluan Admin telah berjaya dikemaskini!")
+                        time.sleep(1)
+                        st.rerun()
+
+        st.divider()
+        st.subheader("👥 Senarai Penilai")
+        
         if st.button("📚 Tambah Penilai Berkelompok", use_container_width=True): bulk_add_reviewers_dialog(engine, hash_password)
         
         with st.expander("➕ Tambah Penilai Individu"):
