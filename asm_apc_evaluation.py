@@ -13,7 +13,7 @@ from reviewer_logic import render_review_form
 from reporting_logic import render_reporting 
 
 # --- 1. SET PAGE CONFIG (WAJIB PALING ATAS) ---
-st.set_page_config(page_title="ASM APC Evaluation", layout="wide")
+st.set_page_config(page_title="Penilaian APC ASM", layout="wide")
 
 # --- 2. ENGINE & DB INIT (TURBO CACHE) ---
 engine = get_engine()
@@ -70,13 +70,13 @@ is_auth = sync_auth()
 
 # --- 5. LOGIN INTERFACE ---
 if not is_auth:
-    st.title("🔐 ASM APC Evaluation Login")
+    st.title("🔐 Log Masuk Penilaian APC ASM")
     with st.form("login_form"):
-        login_role = st.radio("Log in as:", ["Reviewer", "Admin"], horizontal=True)
-        u_input = st.text_input("Username").strip()
-        p_input = st.text_input("Password", type="password")
+        login_role = st.radio("Log masuk sebagai:", ["Penilai", "Admin"], horizontal=True)
+        u_input = st.text_input("Nama Pengguna (Username)").strip()
+        p_input = st.text_input("Kata Laluan (Password)", type="password")
         
-        if st.form_submit_button("Login", use_container_width=True):
+        if st.form_submit_button("Log Masuk", use_container_width=True):
             with engine.connect() as conn:
                 tbl = "users" if login_role == "Admin" else "reviewers"
                 res = conn.execute(text(f"SELECT password_hash, full_name FROM {tbl} WHERE username = :u"), {"u": u_input}).fetchone()
@@ -90,23 +90,23 @@ if not is_auth:
                     # 3. Update Cookies (Untuk Long-term)
                     cookie_manager.set('rbs_session', json.dumps({"u": u_input, "r": role, "n": res[1]}), expires_at=datetime.now() + timedelta(days=1))
                     
-                    st.success("Login success!"); time.sleep(0.5); st.rerun()
+                    st.success("Log masuk berjaya!"); time.sleep(0.5); st.rerun()
                 else:
-                    st.error("Invalid credentials.")
+                    st.error("Butiran log masuk tidak sah.")
     st.stop()
 
 # --- 6. SIDEBAR & NAVIGATION ---
 with st.sidebar:
     st.title(f"👤 {st.session_state.get('full_name')}")
-    st.caption(f"Role: {st.session_state.get('role')}")
+    st.caption(f"Peranan: {st.session_state.get('role')}")
 
     if st.session_state.role == "Admin":
-        menu = st.radio("Navigation", ["Dashboard", "Reporting", "Evaluation Management", "Reviewer Management"])
+        menu = st.radio("Navigasi", ["Papan Pemuka", "Laporan", "Pengurusan Penilaian", "Pengurusan Penilai"])
     else:
-        menu = st.radio("Navigation", ["Evaluation"])
+        menu = st.radio("Navigasi", ["Penilaian"])
 
     st.divider()
-    if st.button("Logout", type="primary", use_container_width=True):
+    if st.button("Log Keluar", type="primary", use_container_width=True):
         # 1. Set flag logout
         st.session_state.logout_in_progress = True
         
@@ -134,9 +134,9 @@ with st.sidebar:
 
 # --- 7. MODULE ROUTING ---
 # Guna engine sedia ada (connection pool)
-if menu == "Dashboard": render_dashboard(engine)
-elif menu == "Reporting": render_reporting(engine)
-elif menu in ["Reviewer Management", "Evaluation Management"]: 
+if menu == "Papan Pemuka": render_dashboard(engine)
+elif menu == "Laporan": render_reporting(engine)
+elif menu in ["Pengurusan Penilai", "Pengurusan Penilaian"]: 
     render_management(menu, engine, hash_password, delete_item)
-elif menu == "Evaluation":
+elif menu == "Penilaian":
     render_review_form(engine, get_malaysia_time, render_apc_evaluation_form)

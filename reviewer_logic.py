@@ -133,15 +133,15 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
 
                                     # Removed justification/remarks display
                                 else:
-                                    st.markdown("**Status:** :orange[⏳ Awaiting Review]")
+                                    st.markdown("**Status:** :orange[⏳ Menunggu Penilaian]")
 
-                                if st.button("Review/Edit", key=f"go_{row['id']}", use_container_width=True, disabled=is_locked):
+                                if st.button("Nilai/Sunting", key=f"go_{row['id']}", use_container_width=True, disabled=is_locked):
                                     st.session_state.active_review_app = row['name']
                                     st.rerun()
 
             if not is_locked and len(reviews_lookup) >= len(apps) > 0:
                 st.divider()
-                if st.button(f"🚀 FINAL SUBMIT ALL REVIEWS ({phase_name})", type="primary", use_container_width=True):
+                if st.button(f"🚀 KUNCI KESEMUA PENILAIAN ({phase_name})", type="primary", use_container_width=True):
                     with engine.begin() as conn:
                         conn.execute(text(f"UPDATE {table_reviews} SET is_final = TRUE WHERE reviewer_username = :u"), {"u": st.session_state.username})
                     st.cache_resource.clear(); st.balloons(); st.rerun()
