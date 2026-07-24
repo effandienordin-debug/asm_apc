@@ -69,15 +69,10 @@ def render_reporting(engine):
     filtered_df = df[df['reviewer_name'].isin(f_rev)]
 
     # --- 3. VISUALS ---
-    avg_scores = filtered_df.groupby('applicant_name')['total_score'].mean().reset_index()
-    fig1 = px.bar(avg_scores, x='applicant_name', y='total_score', title="Purata Markah Keseluruhan Calon", text_auto=True)
-    
     review_counts = filtered_df.groupby('applicant_name').size().reset_index(name='count')
     fig2 = px.bar(review_counts, x='applicant_name', y='count', title="Jumlah Penilaian (Reviews) Diterima", text_auto=True)
 
-    col1, col2 = st.columns(2)
-    col1.plotly_chart(fig1, use_container_width=True)
-    col2.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, use_container_width=True)
 
     # --- 4. ALIGNED EXPORT BUTTONS ---
     st.divider()
