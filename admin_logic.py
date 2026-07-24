@@ -23,8 +23,8 @@ def get_local_image_base64(username):
 @st.dialog("📝 Edit Applicant")
 def edit_applicant_dialog(engine, app_data):
     with st.form("edit_app_form"):
-        new_name = st.text_input("Full Name", value=app_data['name'])
-        new_inst = st.text_input("Position", value=app_data['institution'])
+        new_name = st.text_input("Nama Penuh", value=app_data['name'])
+        new_inst = st.text_input("Jawatan", value=app_data['institution'])
         
         # Keep old values for hidden fields to avoid DB constraint issues
         new_title = app_data.get('proposal_title', '')
@@ -55,9 +55,9 @@ def edit_reviewer_dialog(engine, rev_data, hash_password):
 
 @st.dialog("📚 Bulk Add Applicants")
 def bulk_add_applicants_dialog(engine):
-    st.markdown("**Format:** `Applicant Name, Position` (One per line)")
-    raw_data = st.text_area("Paste applicant list here", height=200)
-    if st.button("Import Applicants", type="primary"):
+    st.markdown("**Format:** `Nama Calon, Jawatan` (Satu baris untuk setiap calon)")
+    raw_data = st.text_area("Tampal senarai calon di sini", height=200)
+    if st.button("Import Calon", type="primary"):
         lines = [line.strip() for line in raw_data.split('\n') if line.strip()]
         with engine.begin() as conn:
             for line in lines:
@@ -159,11 +159,11 @@ def render_management(menu, engine, hash_password, delete_item):
         c1, c2 = st.columns(2)
         if c1.button("📚 Bulk Add Applicants", use_container_width=True): bulk_add_applicants_dialog(engine)
         
-        with st.expander("➕ Add New Applicant"):
+        with st.expander("➕ Tambah Calon Baru"):
             with st.form("add_app_single", clear_on_submit=True):
-                n = st.text_input("Applicant Name*")
-                i = st.text_input("Position")
-                if st.form_submit_button("Save Applicant", type="primary"):
+                n = st.text_input("Nama Calon*")
+                i = st.text_input("Jawatan")
+                if st.form_submit_button("Simpan Calon", type="primary"):
                     if n:
                         with engine.begin() as conn:
                             conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks) VALUES (:n, :t, :i, :l, :r)"), {"n":n, "t":"", "i":i, "l":"", "r":""})
@@ -178,7 +178,7 @@ def render_management(menu, engine, hash_password, delete_item):
                 ca, cb, cc = st.columns([0.1, 3, 1.2])
                 ca.write(f"{idx+1}")
                 cb.write(f"**{row['name']}**")
-                cb.caption(f"💼 Position: {row['institution'] if row['institution'] else 'N/A'}")
+                cb.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
                 
                 ced1, ced2 = cc.columns(2)
                 if ced1.button("📝 Edit", key=f"ed_ap_{row['id']}"): edit_applicant_dialog(engine, row)

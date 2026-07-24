@@ -2,8 +2,8 @@ import streamlit as st
 from database_utils import get_radio_index
 
 def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
-    st.subheader("📋 360 Degree Evaluation (APC-ASM)")
-    st.info("Please provide a score (1 - 5) based on the core competency criteria below. The score will be calculated automatically.")
+    st.subheader("📋 Penilaian 360 Darjah (APC-ASM)")
+    st.info("Sila berikan markah (1 - 5) berdasarkan kriteria kecekapan utama di bawah. Markah akan dikira secara automatik.")
     
     def get_val(key, default=1):
         val = prev_responses.get(key, default)
@@ -14,11 +14,11 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
             
     # --- RUBRIC DEFINITION ---
     options = [
-        "1 - Unsatisfactory",
-        "2 - Needs Improvement",
-        "3 - Meets Expectations",
-        "4 - Exceeds Expectations",
-        "5 - Excellent"
+        "1 - Tidak Memuaskan",
+        "2 - Memerlukan Penambahbaikan",
+        "3 - Memenuhi Jangkaan",
+        "4 - Melebihi Jangkaan",
+        "5 - Cemerlang"
     ]
     
     def get_index_from_val(val):
@@ -31,42 +31,92 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
 
     st.divider()
     
-    # 1. Leadership
-    st.markdown("### 1. Leadership")
-    st.caption("Able to lead in a positive, constructive manner and provide direction in accordance with the organization's policies, procedures, and job descriptions.")
-    kepimpinan_opt = st.radio("Leadership Score", options, index=get_index_from_val(get_val('kepimpinan', 1)), disabled=disabled, horizontal=True, key="kepimpinan")
+    # 1. Daya Kepimpinan
+    st.markdown("### 1. Daya Kepimpinan")
+    st.caption("Pegawai berkebolehan memimpin dengan cara yang positif, membina dan memberi arahan mengikut polisi, tatacara dan deskripsi kerja organisasi.")
+    with st.expander("📖 Lihat Rubrik Terperinci"):
+        st.markdown("""
+| Skala | Keterangan |
+|---|---|
+| **1 - Tidak Memuaskan** | Sedikit atau tiada daya kepimpinan dalam menyelesaikan atau menangani konflik dalam pasukan. |
+| **2 - Memerlukan Penambahbaikan** | Berusaha memimpin pasukan tetapi tidak memberikan arahan dan pemahaman yang jelas untuk tugasan yang perlu dilaksanakan. |
+| **3 - Memenuhi Jangkaan** | Berkebolehan memimpin pasukan dan konsisten memberikan arahan dan pemahaman yang jelas untuk tugasan yang perlu dilaksanakan. |
+| **4 - Melebihi Jangkaan** | Berkebolehan memimpin pasukan dan menjangkakan cabaran yang akan dihadapi dan bersedia dengan pelan luar jangkaan. |
+| **5 - Cemerlang** | Berkebolehan memimpin, menjadi mentor dan rujukan dalam pasukan. |
+        """)
+    kepimpinan_opt = st.radio("Markah Daya Kepimpinan", options, index=get_index_from_val(get_val('kepimpinan', 1)), disabled=disabled, horizontal=True, key="kepimpinan")
     kepimpinan_val = val_from_option(kepimpinan_opt)
     
     st.divider()
     
-    # 2. Teamwork
-    st.markdown("### 2. Teamwork")
-    st.caption("Able to work in groups and carry out tasks cooperatively to achieve goals and complete tasks within a team.")
-    pasukan_opt = st.radio("Teamwork Score", options, index=get_index_from_val(get_val('pasukan', 1)), disabled=disabled, horizontal=True, key="pasukan")
+    # 2. Semangat Berpasukan
+    st.markdown("### 2. Semangat Berpasukan")
+    st.caption("Pegawai berkeupayaan untuk bekerja secara berkumpulan dan menjalankan tugas secara bekerjasama bagi mencapai matlamat dan menyelesaikan tugas dalam satu pasukan.")
+    with st.expander("📖 Lihat Rubrik Terperinci"):
+        st.markdown("""
+| Skala | Keterangan |
+|---|---|
+| **1 - Tidak Memuaskan** | Tidak menunjukkan minat atau tidak mengambil bahagian dalam kerja berpasukan. |
+| **2 - Memerlukan Penambahbaikan** | Mengambil bahagian dalam kerja berpasukan untuk tugasan tertentu. |
+| **3 - Memenuhi Jangkaan** | Mengambil bahagian secara aktif bagi mencapai matlamat dan menyelesaikan tugas dalam satu pasukan. |
+| **4 - Melebihi Jangkaan** | Berkebolehan mewujudkan suasana kerja berpasukan yang harmoni dan mempunyai semangat berpasukan yang tinggi. |
+| **5 - Cemerlang** | Memberikan kerjasama yang proaktif kepada kumpulan pengurusan dalam mencari penyelesaian yang tepat untuk organisasi. |
+        """)
+    pasukan_opt = st.radio("Markah Semangat Berpasukan", options, index=get_index_from_val(get_val('pasukan', 1)), disabled=disabled, horizontal=True, key="pasukan")
     pasukan_val = val_from_option(pasukan_opt)
     
     st.divider()
     
-    # 3. Interpersonal Skills
-    st.markdown("### 3. Interpersonal Skills")
-    st.caption("Able to interact with a positive attitude and behavior, including effective communication, good problem solving, and effective negotiation skills.")
-    interpersonal_opt = st.radio("Interpersonal Skills Score", options, index=get_index_from_val(get_val('interpersonal', 1)), disabled=disabled, horizontal=True, key="interpersonal")
+    # 3. Kemahiran Interpersonal
+    st.markdown("### 3. Kemahiran Interpersonal")
+    st.caption("Pegawai berkeupayaan untuk berinteraksi dengan sikap dan tingkah laku yang positif termasuk cara berkomunikasi yang efektif, penyelesaian masalah yang baik dan kemahiran rundingan yang berkesan.")
+    with st.expander("📖 Lihat Rubrik Terperinci"):
+        st.markdown("""
+| Skala | Keterangan |
+|---|---|
+| **1 - Tidak Memuaskan** | Tidak berkeupayaan untuk berinteraksi dengan sikap dan tingkah laku yang positif. |
+| **2 - Memerlukan Penambahbaikan** | Berkeupayaan untuk berinteraksi dengan sikap dan tingkah laku yang positif namun, memerlukan bimbingan untuk berinteraksi dengan jelas. |
+| **3 - Memenuhi Jangkaan** | Berkomunikasi dengan meyakinkan serta menggunakan nada, kaedah, saluran dan kandungan yang jelas. |
+| **4 - Melebihi Jangkaan** | Berkomunikasi secara jelas, mendengar dan menerima pendapat dan menggalakkan komunikasi terbuka. |
+| **5 - Cemerlang** | Berkebolehan mempengaruhi orang lain berdasarkan pemahaman terperinci mengenai tugasan sambil mengekalkan sikap saling menghormati. |
+        """)
+    interpersonal_opt = st.radio("Markah Kemahiran Interpersonal", options, index=get_index_from_val(get_val('interpersonal', 1)), disabled=disabled, horizontal=True, key="interpersonal")
     interpersonal_val = val_from_option(interpersonal_opt)
     
     st.divider()
     
-    # 4. Accountability
-    st.markdown("### 4. Accountability")
-    st.caption("Responsible for the tasks and decisions made, and ready to accept the consequences and implications of their actions.")
-    akauntabiliti_opt = st.radio("Accountability Score", options, index=get_index_from_val(get_val('akauntabiliti', 1)), disabled=disabled, horizontal=True, key="akauntabiliti")
+    # 4. Akauntabiliti
+    st.markdown("### 4. Akauntabiliti")
+    st.caption("Pegawai bertanggungjawab ke atas tugasan atau keputusan yang dilakukan dan bersedia untuk menerima kesan dan implikasi dari suatu perbuatan atas tindakan yang dilakukannya.")
+    with st.expander("📖 Lihat Rubrik Terperinci"):
+        st.markdown("""
+| Skala | Keterangan |
+|---|---|
+| **1 - Tidak Memuaskan** | Tidak bertanggungjawab ke atas tugasan atau keputusan yang dilakukan dan memerlukan penyeliaan yang berterusan. |
+| **2 - Memerlukan Penambahbaikan** | Memenuhi tanggungjawab atau tugasan tetapi masih memerlukan penyeliaan dan arahan yang kerap. |
+| **3 - Memenuhi Jangkaan** | Bertanggungjawab ke atas tugasan yang diberikan dengan penyeliaan yang minimal dan memahami kesan daripada sebarang tindakan yang dilakukan. |
+| **4 - Melebihi Jangkaan** | Memenuhi tanggungjawab atau tugasan melebihi jangkaan yang ditetapkan dan menerima secara terbuka hasil kerja yang positif atau negatif. |
+| **5 - Cemerlang** | Berkebolehan memenuhi tanggungjawab atau tugasan dan bersedia menerima implikasi dari setiap keputusan serta mengekalkan profesionalisme. |
+        """)
+    akauntabiliti_opt = st.radio("Markah Akauntabiliti", options, index=get_index_from_val(get_val('akauntabiliti', 1)), disabled=disabled, horizontal=True, key="akauntabiliti")
     akauntabiliti_val = val_from_option(akauntabiliti_opt)
     
     st.divider()
     
-    # 5. Innovation
-    st.markdown("### 5. Innovation")
-    st.caption("Able to be creative and show initiative to generate innovations or improvements for the organization.")
-    inovatif_opt = st.radio("Innovation Score", options, index=get_index_from_val(get_val('inovatif', 1)), disabled=disabled, horizontal=True, key="inovatif")
+    # 5. Inovatif
+    st.markdown("### 5. Inovatif")
+    st.caption("Pegawai berkeupayaan dan berkebolehan menjadi kreatif dan menunjukkan inisiatif untuk menjana pembaharuan atau penambahbaikan organisasi.")
+    with st.expander("📖 Lihat Rubrik Terperinci"):
+        st.markdown("""
+| Skala | Keterangan |
+|---|---|
+| **1 - Tidak Memuaskan** | Tiada inisiatif dan penjanaan idea serta penambahbaikan baru dalam tugas. |
+| **2 - Memerlukan Penambahbaikan** | Berkebolehan mengutarakan idea dan inisiatif untuk penambahbaikan namun masih memerlukan bimbingan, panduan dan sokongan. |
+| **3 - Memenuhi Jangkaan** | Kreatif dan proaktif dalam penjanaan idea dengan pemantauan yang minimal. |
+| **4 - Melebihi Jangkaan** | Berkemampuan menggabungkan dan menambahbaik idea-idea baru untuk digunapakai dalam organisasi. |
+| **5 - Cemerlang** | Berkebolehan memimpin, menyelaras dan mengutamakan penerokaan idea baru selaras dengan matlamat organisasi. |
+        """)
+    inovatif_opt = st.radio("Markah Inovatif", options, index=get_index_from_val(get_val('inovatif', 1)), disabled=disabled, horizontal=True, key="inovatif")
     inovatif_val = val_from_option(inovatif_opt)
     
     # --- SCORE CALCULATION ---
@@ -75,17 +125,17 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     st.divider()
     st.markdown(f"""
         <div style="background-color:#e1f5fe; padding:20px; border-radius:10px; border-left: 8px solid #0288d1; text-align:center;">
-            <p style="margin:0; font-size:16px; color:#01579b;">Total Score</p>
+            <p style="margin:0; font-size:16px; color:#01579b;">Jumlah Markah</p>
             <h1 style="margin:0; color:#01579b;">{total_score} / 25</h1>
         </div>
     """, unsafe_allow_html=True)
     st.divider()
     
     # --- REMARKS ---
-    st.subheader("💡 Comments")
+    st.subheader("💡 Ulasan")
     
     prev_remark = rev_metadata.get('overall_justification', "")
-    remark_val = st.text_area("Remarks / Comments (Required)", value=prev_remark, height=150, disabled=disabled, placeholder="Please provide your comments regarding this applicant...")
+    remark_val = st.text_area("Ulasan / Komen (Wajib)", value=prev_remark, height=150, disabled=disabled, placeholder="Sila berikan ulasan anda mengenai calon ini...")
     
     return {
         "responses": {

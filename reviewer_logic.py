@@ -18,7 +18,7 @@ def get_assigned_applicants(_engine, username):
 # --- 2. RENDER REVIEW FORM & GALLERY ---
 def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     table_reviews = "reviews"
-    phase_name = "360 Degree APC Evaluation"
+    phase_name = "Penilaian 360 Darjah APC"
 
     st.markdown(f"## 📋 ASM APC: {phase_name}")
     st.divider()
@@ -49,17 +49,17 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
             if app['photo']: col_img.image(bytes(app['photo']), width=150)
 
             col_txt.subheader(name)
-            col_txt.markdown(f"**Position:** {app['institution'] if app['institution'] else 'N/A'}")
+            col_txt.markdown(f"**Jawatan:** {app['institution'] if app['institution'] else 'N/A'}")
 
         # --- EVALUATION FORM ---
         res = render_apc_evaluation_form(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
 
         # BUTTONS (Extracted from form for flexibility)
         if not is_locked:
-            if st.button("💾 Save Draft", use_container_width=True, type="primary"):
+            if st.button("💾 Simpan Draf", use_container_width=True, type="primary"):
                 is_incomplete = not res["justification"].strip()
                 if is_incomplete:
-                    st.error("🚨 Please provide your Remarks/Comments before saving.")
+                    st.error("🚨 Sila isikan ulasan (Remarks/Comments) sebelum menyimpan.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -70,14 +70,14 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                                          {"u":st.session_state.username, "a":name, "r":json.dumps(res["responses"]), "fr":res["recommendation"], "oj":res["justification"], "t":get_malaysia_time()})
                     
                     st.cache_resource.clear()
-                    st.toast("✅ Draft saved!")
-                    st.success("Draft updated. You can continue editing or go back manually.")
+                    st.toast("✅ Draf disimpan!")
+                    st.success("Draf dikemas kini. Anda boleh teruskan suntingan atau kembali ke senarai.")
                     st.rerun() # Stay on the page
 
-            if st.button("🚀 Submit Final Evaluation", use_container_width=True, type="secondary"):
+            if st.button("🚀 Hantar Penilaian Akhir", use_container_width=True, type="secondary"):
                 is_incomplete = not res["justification"].strip()
                 if is_incomplete:
-                    st.error("🚨 Please provide your Remarks/Comments before saving.")
+                    st.error("🚨 Sila isikan ulasan (Remarks/Comments) sebelum menghantar.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -87,11 +87,11 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                             conn.execute(text(f"INSERT INTO {table_reviews} (reviewer_username, applicant_name, responses, final_recommendation, overall_justification, submitted_at, updated_at, is_final) VALUES (:u, :a, :r, :fr, :oj, :t, :t, TRUE)"),
                                          {"u":st.session_state.username, "a":name, "r":json.dumps(res["responses"]), "fr":res["recommendation"], "oj":res["justification"], "t":get_malaysia_time()})
                     st.cache_resource.clear()
-                    st.toast("✅ Evaluation Submitted!")
+                    st.toast("✅ Penilaian Dihantar!")
                     st.session_state.active_review_app = None
                     st.rerun()
 
-        if st.button("⬅️ Back to Gallery", use_container_width=True):
+        if st.button("⬅️ Kembali ke Senarai Calon", use_container_width=True):
             st.session_state.active_review_app = None
             st.rerun()
             
@@ -118,17 +118,17 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                                 else: st.image("https://cdn-icons-png.flaticon.com/512/149/149071.png", use_container_width=True)
 
                                 st.write(f"**{row['name']}**")
-                                st.caption(f"💼 Position: {row['institution'] if row['institution'] else 'N/A'}")
+                                st.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
 
                                 if row['name'] in reviews_lookup:
                                     r_data = reviews_lookup[row['name']]
-                                    st.markdown(f"**Status:** :green[✅ Completed]")
+                                    st.markdown(f"**Status:** :green[✅ Selesai]")
                                     
                                     # --- Papar Markah ---
                                     try:
                                         res_data = json.loads(r_data.get('responses', '{}'))
                                         total = res_data.get('total_score', 0)
-                                        st.markdown(f"**Total Score:** :blue[{total} / 25]")
+                                        st.markdown(f"**Jumlah Markah:** {total} / 25")
                                     except: pass
 
                                     justification = r_data.get('overall_justification')
