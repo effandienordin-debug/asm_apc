@@ -81,12 +81,8 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     """, unsafe_allow_html=True)
     st.divider()
     
-    # --- RECOMMENDATION & REMARKS ---
-    st.subheader("💡 Support & Final Comments")
-    prev_rec = rev_metadata.get('final_recommendation')
-    rec_index = 0 if prev_rec == "SUPPORT" else 1 if prev_rec == "DO NOT SUPPORT" else None
-    
-    rec_val = st.radio("Do you support this nomination for APC?", options=["SUPPORT", "DO NOT SUPPORT"], index=rec_index, disabled=disabled, horizontal=True)
+    # --- REMARKS ---
+    st.subheader("💡 Comments")
     
     prev_remark = rev_metadata.get('overall_justification', "")
     remark_val = st.text_area("Remarks / Comments (Required)", value=prev_remark, height=150, disabled=disabled, placeholder="Please provide your comments regarding this applicant...")
@@ -100,6 +96,6 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
             "inovatif": inovatif_val,
             "total_score": total_score
         },
-        "recommendation": rec_val,
+        "recommendation": "SUPPORT", # Defaulting to SUPPORT in DB since we removed it from UI
         "justification": remark_val
     }

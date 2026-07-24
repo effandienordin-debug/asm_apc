@@ -21,7 +21,6 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     phase_name = "360 Degree APC Evaluation"
 
     st.markdown(f"## 📋 ASM APC: {phase_name}")
-    st.info("Reviewers can access the applicants' information and supporting documents via the 'View Documents' Link.")
     st.divider()
 
     with st.container(border=True):
@@ -58,10 +57,9 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
         # BUTTONS (Extracted from form for flexibility)
         if not is_locked:
             if st.button("💾 Save Draft", use_container_width=True, type="primary"):
-                is_incomplete = res["recommendation"] is None or not res["justification"].strip()
-
+                is_incomplete = not res["justification"].strip()
                 if is_incomplete:
-                    st.error("🚨 Please answer all required questions (SUPPORT/DO NOT SUPPORT & Comments) before saving.")
+                    st.error("🚨 Please provide your Remarks/Comments before saving.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -75,6 +73,23 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                     st.toast("✅ Draft saved!")
                     st.success("Draft updated. You can continue editing or go back manually.")
                     st.rerun() # Stay on the page
+
+            if st.button("🚀 Submit Final Evaluation", use_container_width=True, type="secondary"):
+                is_incomplete = not res["justification"].strip()
+                if is_incomplete:
+                    st.error("🚨 Please provide your Remarks/Comments before saving.")
+                else:
+                    with engine.begin() as conn:
+                        if not rev.empty:
+                            conn.execute(text(f"UPDATE {table_reviews} SET responses=:r, final_recommendation=:fr, overall_justification=:oj, updated_at=:t, is_final=TRUE WHERE id=:id"),
+                                         {"r":json.dumps(res["responses"]), "fr":res["recommendation"], "oj":res["justification"], "t":get_malaysia_time(), "id":int(rev.iloc[0]['id'])})
+                        else:
+                            conn.execute(text(f"INSERT INTO {table_reviews} (reviewer_username, applicant_name, responses, final_recommendation, overall_justification, submitted_at, updated_at, is_final) VALUES (:u, :a, :r, :fr, :oj, :t, :t, TRUE)"),
+                                         {"u":st.session_state.username, "a":name, "r":json.dumps(res["responses"]), "fr":res["recommendation"], "oj":res["justification"], "t":get_malaysia_time()})
+                    st.cache_resource.clear()
+                    st.toast("✅ Evaluation Submitted!")
+                    st.session_state.active_review_app = None
+                    st.rerun()
 
         if st.button("⬅️ Back to Gallery", use_container_width=True):
             st.session_state.active_review_app = None
@@ -107,11 +122,8 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
 
                                 if row['name'] in reviews_lookup:
                                     r_data = reviews_lookup[row['name']]
-                                    rec = r_data['final_recommendation']
-                                    color = "green" if rec == "SUPPORT" else "red"
                                     st.markdown(f"**Status:** :green[✅ Completed]")
-                                    st.markdown(f"**Recommendation:** :{color}[{rec}]")
-
+                                    
                                     # --- Papar Markah ---
                                     try:
                                         res_data = json.loads(r_data.get('responses', '{}'))
