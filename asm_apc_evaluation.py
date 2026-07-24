@@ -7,7 +7,7 @@ from sqlalchemy import text
 
 # Import utiliti
 from database_utils import get_engine, init_db, check_password, hash_password, get_malaysia_time, delete_item
-from form_components import render_evaluation_fields, render_scoring_fields
+from form_components import render_apc_evaluation_form
 from admin_logic import render_dashboard, render_management
 from reviewer_logic import render_review_form
 from reporting_logic import render_reporting 
@@ -101,9 +101,9 @@ with st.sidebar:
     st.caption(f"Role: {st.session_state.get('role')}")
 
     if st.session_state.role == "Admin":
-        menu = st.radio("Navigation", ["Dashboard", "Reporting", "Phase 1 Management", "Phase 2 Management", "Reviewer Management"])
+        menu = st.radio("Navigation", ["Dashboard", "Reporting", "Evaluation Management", "Reviewer Management"])
     else:
-        menu = st.radio("Navigation", ["Phase 1: Shortlisting", "Phase 2: Winner Selection"])
+        menu = st.radio("Navigation", ["Evaluation"])
 
     st.divider()
     if st.button("Logout", type="primary", use_container_width=True):
@@ -136,8 +136,7 @@ with st.sidebar:
 # Guna engine sedia ada (connection pool)
 if menu == "Dashboard": render_dashboard(engine)
 elif menu == "Reporting": render_reporting(engine)
-elif menu in ["Reviewer Management", "Phase 1 Management", "Phase 2 Management"]: 
+elif menu in ["Reviewer Management", "Evaluation Management"]: 
     render_management(menu, engine, hash_password, delete_item)
-elif "Phase" in menu:
-    p_num = 1 if "Phase 1" in menu else 2
-    render_review_form(engine, get_malaysia_time, p_num, render_evaluation_fields, render_scoring_fields)
+elif menu == "Evaluation":
+    render_review_form(engine, get_malaysia_time, render_apc_evaluation_form)

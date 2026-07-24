@@ -85,7 +85,6 @@ def render_dashboard(engine):
         st.cache_resource.clear()
         st.rerun()
         
-    # SQL level matching untuk pastikan kiraan tepat (Anti-Space & Case Insensitive)
     query_p1 = text("""
         SELECT 
             r.username, 
@@ -101,7 +100,7 @@ def render_dashboard(engine):
     try:
         stats_p1 = pd.read_sql(query_p1, engine)
         
-        st.subheader("📋 Phase 1: Shortlisting Status")
+        st.subheader("📋 Evaluation Status")
         if stats_p1.empty:
             st.info("No reviewers found in database.")
         else:
@@ -111,11 +110,9 @@ def render_dashboard(engine):
                 assigned = row['assigned']
                 done = row['done']
                 
-                # Warna box (hijau jika selesai, kuning jika belum)
                 bg = "#E6FFFA" if (done >= assigned and assigned > 0) else "#FFFBEB"
                 
                 with cols[i % 4]:
-                    # PEMBETULAN: Kunci warna teks guna color: #1a202c (hitam pekat)
                     st.markdown(f"""
                         <div style='background-color:{bg}; padding:15px; border-radius:8px; border:1px solid #cbd5e0; margin-bottom:10px; text-align:center;'>
                             <strong style='color: #1a202c; font-size:14px; display: block; margin-bottom: 5px;'>{f}</strong>
@@ -125,9 +122,8 @@ def render_dashboard(engine):
                     """, unsafe_allow_html=True)
 
         st.divider()
-        # --- PHASE 2 RANKING ---
-        st.subheader("🏁 Phase 2: Leaderboard (Ranking)")
-        p2_reviews = pd.read_sql("SELECT applicant_name, responses FROM phase2_reviews", engine)
+        st.subheader("🏁 Leaderboard (Ranking)")
+        p2_reviews = pd.read_sql("SELECT applicant_name, responses FROM reviews", engine)
         
         if not p2_reviews.empty:
             leaderboard_data = []
@@ -136,7 +132,7 @@ def render_dashboard(engine):
                     res = json.loads(r_row['responses'])
                     leaderboard_data.append({
                         "Applicant": r_row['applicant_name'], 
-                        "Score": float(res.get('total_score', 0))
+                        "Score": int(res.get('total_score', 0))
                     })
                 except: continue
             
@@ -146,16 +142,16 @@ def render_dashboard(engine):
                 final_ld.index += 1
                 st.table(final_ld)
             else: st.info("No scores calculated yet.")
-        else: st.info("Waiting for Phase 2 submissions...")
+        else: st.info("Waiting for submissions...")
 
     except Exception as e:
         st.error(f"🚨 Dashboard Error: {str(e)}")
 
 # --- 4. RENDER MANAGEMENT ---
 def render_management(menu, engine, hash_password, delete_item):
-    if menu == "Phase 1 Management":
+    if menu == "Evaluation Management":
         apps_df = pd.read_sql("SELECT * FROM applicants ORDER BY id ASC", engine)
-        st.header(f"📋 Phase 1 Management (Total: {len(apps_df)})")
+        st.header(f"📋 Evaluation Management (Total: {len(apps_df)})")
         
         c1, c2 = st.columns(2)
         if c1.button("📚 Bulk Add Applicants", use_container_width=True): bulk_add_applicants_dialog(engine)
@@ -193,35 +189,6 @@ def render_management(menu, engine, hash_password, delete_item):
                         for r in sel:
                             conn.execute(text("INSERT INTO applicant_assignments (applicant_name, reviewer_username) VALUES (:a, :r)"), {"a":row['name'], "r":r})
                     st.success("✅ Saved!"); time.sleep(0.5); st.rerun()
-
-    elif menu == "Phase 2 Management":
-        finalists_df = pd.read_sql(text("SELECT DISTINCT a.* FROM applicants a JOIN reviews r ON a.name = r.applicant_name WHERE UPPER(r.final_recommendation) = 'YES'"), engine)
-        st.header(f"🏆 Phase 2 Management (Total: {len(finalists_df)})")
-        
-        revs_df = pd.read_sql("SELECT username, full_name FROM reviewers", engine)
-        assign_p2 = pd.read_sql("SELECT * FROM phase2_assignments", engine)
-        rev_map = dict(zip(revs_df['username'], revs_df['full_name']))
-
-        for idx, row in finalists_df.iterrows():
-            with st.container(border=True):
-                c1, c2 = st.columns([3, 1])
-                c1.write(f"**{idx+1}. {row['name']}**")
-                
-                sc_df = pd.read_sql(text("SELECT reviewer_username, responses, final_recommendation FROM phase2_reviews WHERE applicant_name = :n"), engine, params={"n":row['name']})
-                for _, s in sc_df.iterrows():
-                    try:
-                        m = json.loads(s['responses']).get('total_score', 0)
-                        st.markdown(f"⭐ **{s['reviewer_username']}**: :blue[{m:.1f}%] ({s['final_recommendation']})")
-                    except: continue
-
-                curr_p2 = assign_p2[assign_p2['applicant_name']==row['name']]['reviewer_username'].tolist()
-                sel_p2 = st.multiselect("Assign Reviewers (Phase 2):", options=list(rev_map.keys()), default=curr_p2, format_func=lambda x: rev_map.get(x), key=f"p2_sel_{row['id']}")
-                if c2.button("💾 Save", key=f"p2_sv_{row['id']}"):
-                    with engine.begin() as conn:
-                        conn.execute(text("DELETE FROM phase2_assignments WHERE applicant_name = :a"), {"a":row['name']})
-                        for r in sel_p2:
-                            conn.execute(text("INSERT INTO phase2_assignments (applicant_name, reviewer_username) VALUES (:a, :r)"), {"a":row['name'], "r":r})
-                    st.success("✅ Saved!"); st.rerun()
 
     elif menu == "Reviewer Management":
         st.header("👤 Evaluator Management")

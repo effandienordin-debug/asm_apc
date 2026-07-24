@@ -11,11 +11,26 @@ def get_report_data(_engine):
             COALESCE(rev.full_name, r.reviewer_username) as reviewer_name,
             r.final_recommendation,
             r.is_final,
-            r.overall_justification
+            r.overall_justification,
+            r.responses
         FROM reviews r
         LEFT JOIN reviewers rev ON r.reviewer_username = rev.username
     """
-    return pd.read_sql(text(query), _engine)
+    import json
+    df = pd.read_sql(text(query), _engine)
+    
+    # Extract total_score from responses json
+    def get_score(resp_str):
+        try:
+            return int(json.loads(resp_str).get('total_score', 0))
+        except:
+            return 0
+            
+    if 'responses' in df.columns:
+        df['total_score'] = df['responses'].apply(get_score)
+        df = df.drop(columns=['responses'])
+        
+    return df
 
 def render_reporting(engine):
     # --- 1. CSS PRINT HACK (Updated to hide toasts and align layout) ---
@@ -43,7 +58,7 @@ def render_reporting(engine):
         </style>
     """, unsafe_allow_html=True)
 
-    st.header("📄 Grant Reporting Center")
+    st.header("📄 APC Evaluation Reporting Center")
     df = get_report_data(engine)
 
     if df.empty:

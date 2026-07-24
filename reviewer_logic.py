@@ -5,8 +5,8 @@ from sqlalchemy import text
 
 # --- 1. CACHED DATA FETCHING ---
 @st.cache_resource(ttl=60)
-def get_assigned_applicants(_engine, username, phase):
-    table_assign = "applicant_assignments" if phase == 1 else "phase2_assignments"
+def get_assigned_applicants(_engine, username):
+    table_assign = "applicant_assignments"
     query = text(f"""
         SELECT a.* FROM applicants a
         JOIN {table_assign} aa ON a.name = aa.applicant_name
@@ -16,11 +16,11 @@ def get_assigned_applicants(_engine, username, phase):
     return df
 
 # --- 2. RENDER REVIEW FORM & GALLERY ---
-def render_review_form(engine, get_malaysia_time, phase, render_evaluation_fields, render_scoring_fields):
-    table_reviews = "reviews" if phase == 1 else "phase2_reviews"
-    phase_name = "Phase 1: Shortlisting" if phase == 1 else "Phase 2: Winner Selection"
+def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
+    table_reviews = "reviews"
+    phase_name = "Penilaian 360 Darjah APC"
 
-    st.markdown(f"## 📋 Dr Ranjeet Bhagwan Singh Grant: {phase_name}")
+    st.markdown(f"## 📋 ASM APC: {phase_name}")
     st.info("Reviewers can access the applicants' information and supporting documents via the 'View Documents' Link.")
     st.divider()
 
@@ -56,23 +56,15 @@ def render_review_form(engine, get_malaysia_time, phase, render_evaluation_field
             col_txt.markdown(f"🔗 [View Documents]({app['info_link']})")
 
         # --- EVALUATION FORM ---
-        if phase == 1:
-            res = render_evaluation_fields(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
-        else:
-            res = render_scoring_fields(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
+        res = render_apc_evaluation_form(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
 
         # BUTTONS (Dikeluarkan dari form untuk fleksibiliti)
         if not is_locked:
             if st.button("💾 Save Draft", use_container_width=True, type="primary"):
-                is_incomplete = False
-                if phase == 1:
-                    mandatory_codes = ["12a", "12b", "12c", "14a", "14b", "16a", "18a"]
-                    is_incomplete = any(res["responses"].get(c) is None for c in mandatory_codes) or res["recommendation"] is None or not res["justification"].strip()
-                else:
-                    is_incomplete = res["recommendation"] is None or not res["justification"].strip()
+                is_incomplete = res["recommendation"] is None or not res["justification"].strip()
 
                 if is_incomplete:
-                    st.error("⚠️ Sila jawab semua soalan wajib dan ulasan (YES/NO & Justification) sebelum menyimpan.")
+                    st.error("⚠️ Sila jawab semua soalan wajib dan ulasan (SOKONG/TIDAK SOKONG & Justification) sebelum menyimpan.")
                 else:
                     with engine.begin() as conn:
                         if not rev.empty:
@@ -93,7 +85,7 @@ def render_review_form(engine, get_malaysia_time, phase, render_evaluation_field
             
     else:
         # --- GALLERY VIEW ---
-        apps = get_assigned_applicants(engine, st.session_state.username, phase)
+        apps = get_assigned_applicants(engine, st.session_state.username)
 
         if apps.empty:
             st.info(f"You currently have no applicants assigned to you for {phase_name}.")
@@ -119,17 +111,16 @@ def render_review_form(engine, get_malaysia_time, phase, render_evaluation_field
                                 if row['name'] in reviews_lookup:
                                     r_data = reviews_lookup[row['name']]
                                     rec = r_data['final_recommendation']
-                                    color = "green" if rec == "YES" else "red"
+                                    color = "green" if rec == "SOKONG" else "red"
                                     st.markdown(f"**Status:** :green[✅ Saved]")
                                     st.markdown(f"**Recommendation:** :{color}[{rec}]")
 
-                                    # --- TAMBAH INI: Papar Markah Fasa 2 dalam Gallery ---
-                                    if phase == 2:
-                                        try:
-                                            res_data = json.loads(r_data.get('responses', '{}'))
-                                            total = res_data.get('total_score', 0)
-                                            st.markdown(f"**Total Score:** :blue[{total:.1f}%]")
-                                        except: pass
+                                    # --- TAMBAH INI: Papar Markah ---
+                                    try:
+                                        res_data = json.loads(r_data.get('responses', '{}'))
+                                        total = res_data.get('total_score', 0)
+                                        st.markdown(f"**Total Score:** :blue[{total} / 25]")
+                                    except: pass
 
                                     justification = r_data.get('overall_justification')
                                     if justification: st.caption(f"**💬 Comments:** {justification[:50]}...")
