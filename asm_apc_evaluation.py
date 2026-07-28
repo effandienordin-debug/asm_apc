@@ -98,7 +98,8 @@ if not is_auth:
 # --- 6. SIDEBAR & NAVIGATION ---
 with st.sidebar:
     st.title(f"👤 {st.session_state.get('full_name')}")
-    st.caption(f"Peranan: {st.session_state.get('role')}")
+    display_role = "Penilai" if st.session_state.get('role') == "Reviewer" else st.session_state.get('role')
+    st.caption(f"Peranan: {display_role}")
 
     if st.session_state.role == "Admin":
         menu = st.radio("Navigasi", ["Papan Pemuka", "Laporan", "Pengurusan Penilaian", "Pengurusan Penilai"])
