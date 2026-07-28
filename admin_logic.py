@@ -325,15 +325,15 @@ def render_management(menu, engine, hash_password, delete_item):
 
         for idx, row in apps_df.iterrows():
             with st.container(border=True):
-                ca, cb, cc = st.columns([0.1, 2.5, 2])
+                ca, cb, cc = st.columns([0.1, 2.2, 2.3])
                 ca.write(f"{idx+1}")
                 asm_id_str = row['proposal_title'] if row['proposal_title'] else 'Tiada ID'
                 cb.write(f"**{row['name']}** ({asm_id_str})")
                 cb.caption(f"💼 Jawatan: {row['institution'] or 'N/A'} | Gred: {row['info_link'] or 'N/A'} | Bahagian: {row['remarks'] or 'N/A'}")
                 
-                ced1, ced2, ced3 = cc.columns([1, 1.2, 1])
+                ced1, ced2, ced3 = cc.columns([1, 1.4, 1])
                 if ced1.button("📝 Sunting", key=f"ed_ap_{row['id']}", help="Sunting Calon & Syarat"): edit_applicant_dialog(engine, row)
-                if ced2.button("📄 Laporan", key=f"rc_ap_{row['id']}", help="Lihat Kad Laporan"):
+                if ced2.button("📄 Kad Laporan", key=f"rc_ap_{row['id']}", help="Lihat Kad Laporan"):
                     st.session_state.report_card_app = row['name']
                     st.rerun()
                 if ced3.button("🗑️ Padam", key=f"del_ap_{row['id']}", help="Padam Calon"): delete_item("applicants", row['id'])
