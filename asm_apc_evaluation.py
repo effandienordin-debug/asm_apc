@@ -82,16 +82,17 @@ if not is_auth:
             if st.form_submit_button("Log Masuk", use_container_width=True):
                 with engine.connect() as conn:
                     tbl = "users" if login_role == "Admin" else "reviewers"
-                    res = conn.execute(text(f"SELECT password_hash, full_name FROM {tbl} WHERE username = :u"), {"u": u_input}).fetchone()
+                    res = conn.execute(text(f"SELECT password_hash, full_name, username FROM {tbl} WHERE LOWER(username) = LOWER(:u)"), {"u": u_input}).fetchone()
 
                     if res and check_password(p_input, res[0]):
                         role = "Admin" if login_role == "Admin" else "Reviewer"
+                        real_username = res[2]
                         # 1. Update Session
-                        st.session_state.update({"authenticated": True, "username": u_input, "role": role, "full_name": res[1]})
+                        st.session_state.update({"authenticated": True, "username": real_username, "role": role, "full_name": res[1]})
                         # 2. Update URL Params (Untuk Speed Refresh)
-                        st.query_params.update({"u": u_input, "r": role, "n": res[1]})
+                        st.query_params.update({"u": real_username, "r": role, "n": res[1]})
                         # 3. Update Cookies (Untuk Long-term)
-                        cookie_manager.set('rbs_session', json.dumps({"u": u_input, "r": role, "n": res[1]}), expires_at=datetime.now() + timedelta(days=1))
+                        cookie_manager.set('rbs_session', json.dumps({"u": real_username, "r": role, "n": res[1]}), expires_at=datetime.now() + timedelta(days=1))
                         
                         st.success("Log masuk berjaya!"); time.sleep(0.5); st.rerun()
                     else:
@@ -101,8 +102,19 @@ if not is_auth:
 # --- 6. SIDEBAR & NAVIGATION ---
 with st.sidebar:
     st.image("asm-logo.png", use_container_width=True)
-    st.title(f"👤 {st.session_state.get('full_name')}")
-    display_role = "Penilai" if st.session_state.get('role') == "Reviewer" else st.session_state.get('role')
+    
+    # Tukar paparan nama dan peranan untuk Admin
+    fn = st.session_state.get('full_name')
+    if fn == "System Admin": fn = "Pentadbir Sistem"
+    st.title(f"👤 {fn}")
+    
+    if st.session_state.get('role') == "Reviewer":
+        display_role = "Penilai"
+    elif st.session_state.get('role') == "Admin":
+        display_role = "Pentadbir"
+    else:
+        display_role = st.session_state.get('role')
+        
     st.caption(f"Peranan: {display_role}")
 
     if st.session_state.role == "Admin":

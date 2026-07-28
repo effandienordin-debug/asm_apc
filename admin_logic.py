@@ -123,8 +123,8 @@ def bulk_add_reviewers_dialog(engine, hash_password):
 
 
 def render_dashboard(engine):
-    st.header("📊 Penjejak Penilaian Semasa")
-    if st.button("🔄 Segerakkan Data Papan Pemuka"):
+    st.header("📊 Data Penilaian Semasa")
+    if st.button("🔄 Kemaskini Data Papan Pemuka"):
         st.cache_resource.clear()
         st.rerun()
         
@@ -182,6 +182,7 @@ def render_dashboard(engine):
             if leaderboard_data:
                 ld_df = pd.DataFrame(leaderboard_data)
                 final_ld = ld_df.groupby("Calon")["Markah"].mean().sort_values(ascending=False).reset_index()
+                final_ld["Markah"] = final_ld["Markah"].round().astype(int)
                 final_ld.index += 1
                 st.table(final_ld)
             else: st.info("Belum ada markah dikira.")
