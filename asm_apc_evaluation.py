@@ -117,10 +117,13 @@ with st.sidebar:
         
     st.caption(f"Peranan: {display_role}")
 
+    def clear_transient_states():
+        st.session_state.report_card_app = None
+
     if st.session_state.role == "Admin":
-        menu = st.radio("Navigasi", ["Papan Pemuka", "Laporan", "Pengurusan Penilaian", "Pengurusan Penilai"])
+        menu = st.radio("Navigasi", ["Papan Pemuka", "Laporan", "Pengurusan Penilaian", "Pengurusan Penilai"], on_change=clear_transient_states)
     else:
-        menu = st.radio("Navigasi", ["Penilaian"])
+        menu = st.radio("Navigasi", ["Penilaian"], on_change=clear_transient_states)
 
     st.divider()
     if st.button("Log Keluar", type="primary", use_container_width=True):
@@ -150,6 +153,7 @@ with st.sidebar:
         st.rerun()
 
 # --- 7. MODULE ROUTING ---
+
 # Guna engine sedia ada (connection pool)
 if menu == "Papan Pemuka": render_dashboard(engine)
 elif menu == "Laporan": render_reporting(engine)
