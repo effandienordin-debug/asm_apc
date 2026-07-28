@@ -72,8 +72,8 @@ is_auth = sync_auth()
 if not is_auth:
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/e/ec/Academy_of_Sciences_Malaysia_logo.png", width=250)
-        st.title("🔐 Log Masuk Penilaian APC ASM")
+        st.image("asm-logo.png", width=250)
+        st.subheader("🔐 Log masuk Penilaian 360 Darjah untuk calon APC-2025")
         with st.form("login_form"):
             login_role = st.radio("Log masuk sebagai:", ["Penilai", "Admin"], horizontal=True)
             u_input = st.text_input("Nama Pengguna (Username)").strip()
@@ -100,7 +100,7 @@ if not is_auth:
 
 # --- 6. SIDEBAR & NAVIGATION ---
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/e/ec/Academy_of_Sciences_Malaysia_logo.png", use_container_width=True)
+    st.image("asm-logo.png", use_container_width=True)
     st.title(f"👤 {st.session_state.get('full_name')}")
     display_role = "Penilai" if st.session_state.get('role') == "Reviewer" else st.session_state.get('role')
     st.caption(f"Peranan: {display_role}")
