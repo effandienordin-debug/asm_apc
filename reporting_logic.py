@@ -16,15 +16,22 @@ def get_report_data(_engine):
     import json
     df = pd.read_sql(text(query), _engine)
     
-    # Extract total_score from responses json
-    def get_score(resp_str):
-        try:
-            return int(json.loads(resp_str).get('total_score', 0))
-        except:
-            return 0
-            
     if 'responses' in df.columns:
-        df['total_score'] = df['responses'].apply(get_score)
+        def parse_responses(resp_str):
+            try:
+                return json.loads(resp_str) if resp_str else {}
+            except:
+                return {}
+                
+        parsed = df['responses'].apply(parse_responses)
+        
+        df['Daya Kepimpinan'] = parsed.apply(lambda x: int(x.get('kepimpinan', 0)))
+        df['Semangat Berpasukan'] = parsed.apply(lambda x: int(x.get('pasukan', 0)))
+        df['Kemahiran Interpersonal'] = parsed.apply(lambda x: int(x.get('interpersonal', 0)))
+        df['Akauntabiliti'] = parsed.apply(lambda x: int(x.get('akauntabiliti', 0)))
+        df['Inovatif'] = parsed.apply(lambda x: int(x.get('inovatif', 0)))
+        df['Jumlah Markah'] = parsed.apply(lambda x: int(x.get('total_score', 0)))
+        
         df = df.drop(columns=['responses'])
         
     return df
