@@ -227,34 +227,34 @@ def render_report_card(engine, app_name):
     
     # HTML Report Generation
     html = f"""
-    <div style="font-family: Arial, sans-serif; color: black; background: white; padding: 20px;">
-        <h3 class="center-text">PENILAIAN ANUGERAH PERKHIDMATAN CEMERLANG, AKADEMI SAINS MALAYSIA (APC-ASM)</h3>
-        <br>
-        <table>
-            <tr><td width="40%">Tahun Penilaian</td><td>: {info.get('tahun_penilaian', '')}</td></tr>
-            <tr><td>Kumpulan Perkhidmatan</td><td>: {info.get('kump_perkhidmatan', '')}</td></tr>
-            <tr><td>Nama Kakitangan</td><td>: {app_row['name']}</td></tr>
-            <tr><td>No. Pekerja (ID ASM)</td><td>: {app_row['proposal_title']}</td></tr>
-            <tr><td>Tarikh Bermula Berkhidmat</td><td>: {info.get('tarikh_mula', '')}</td></tr>
-            <tr><td>Tempoh Berkhidmat pada 31 Disember</td><td>: {info.get('tempoh_khidmat', '')}</td></tr>
-            <tr><td>Rekod Penerimaan APC</td><td>: {info.get('rekod_apc', 'Tiada')}</td></tr>
-        </table>
-        
-        <h4>SYARAT KELAYAKAN APC-ASM</h4>
-        <table>
-            <tr><th>Syarat</th><th>YA</th><th>TIDAK</th><th>CATATAN</th></tr>
-            <tr><td>Kakitangan bertaraf Tetap / Contract of Service (CoS)</td><td class="center-text">{'✔' if info.get('s_tetap') else ''}</td><td class="center-text">{'✔' if not info.get('s_tetap') else ''}</td><td></td></tr>
-            <tr><td>Kakitangan adalah di Gred 14 dan ke bawah</td><td class="center-text">{'✔' if info.get('s_gred14') else ''}</td><td class="center-text">{'✔' if not info.get('s_gred14') else ''}</td><td>{app_row['info_link']}</td></tr>
-            <tr><td>Telah berkhidmat sekurang-kurangnya satu (1) tahun pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_setahun') else ''}</td><td class="center-text">{'✔' if not info.get('s_setahun') else ''}</td><td></td></tr>
-            <tr><td>Bebas daripada tindakan disiplin / tatatertib pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_disiplin') else ''}</td><td class="center-text">{'✔' if not info.get('s_disiplin') else ''}</td><td></td></tr>
-            <tr><td>Markah Penilaian Prestasi Tahunan (LNPT) adalah 85% dan ke atas pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_lnpt_semasa') else ''}</td><td class="center-text">{'✔' if not info.get('s_lnpt_semasa') else ''}</td><td>{info.get('m_lnpt_semasa', '')}</td></tr>
-            <tr><td>Memperoleh markah LNPT 85% dan ke atas untuk tahun sebelum tahun penilaian</td><td class="center-text">{'✔' if info.get('s_lnpt_sebelum') else ''}</td><td class="center-text">{'✔' if not info.get('s_lnpt_sebelum') else ''}</td><td>{info.get('m_lnpt_sebelum', '')}</td></tr>
-        </table>
-        
-        <h4>PENILAIAN 360 DARJAH APC-ASM</h4>
-        <table>
-            <tr><th>No</th><th>Kumpulan Pegawai</th><th>Pegawai Penilai</th><th>Markah</th></tr>
-    """
+<div style="font-family: Arial, sans-serif; color: black; background: white; padding: 20px;">
+<h3 class="center-text">PENILAIAN ANUGERAH PERKHIDMATAN CEMERLANG, AKADEMI SAINS MALAYSIA (APC-ASM)</h3>
+<br>
+<table>
+<tr><td width="40%">Tahun Penilaian</td><td>: {info.get('tahun_penilaian', '')}</td></tr>
+<tr><td>Kumpulan Perkhidmatan</td><td>: {info.get('kump_perkhidmatan', '')}</td></tr>
+<tr><td>Nama Kakitangan</td><td>: {app_row['name']}</td></tr>
+<tr><td>No. Pekerja (ID ASM)</td><td>: {app_row['proposal_title']}</td></tr>
+<tr><td>Tarikh Bermula Berkhidmat</td><td>: {info.get('tarikh_mula', '')}</td></tr>
+<tr><td>Tempoh Berkhidmat pada 31 Disember</td><td>: {info.get('tempoh_khidmat', '')}</td></tr>
+<tr><td>Rekod Penerimaan APC</td><td>: {info.get('rekod_apc', 'Tiada')}</td></tr>
+</table>
+<br>
+<h4>SYARAT KELAYAKAN APC-ASM</h4>
+<table>
+<tr><th>Syarat</th><th>YA</th><th>TIDAK</th><th>CATATAN</th></tr>
+<tr><td>Kakitangan bertaraf Tetap / Contract of Service (CoS)</td><td class="center-text">{'✔' if info.get('s_tetap') else ''}</td><td class="center-text">{'✔' if not info.get('s_tetap') else ''}</td><td></td></tr>
+<tr><td>Kakitangan adalah di Gred 14 dan ke bawah</td><td class="center-text">{'✔' if info.get('s_gred14') else ''}</td><td class="center-text">{'✔' if not info.get('s_gred14') else ''}</td><td>{app_row['info_link']}</td></tr>
+<tr><td>Telah berkhidmat sekurang-kurangnya satu (1) tahun pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_setahun') else ''}</td><td class="center-text">{'✔' if not info.get('s_setahun') else ''}</td><td></td></tr>
+<tr><td>Bebas daripada tindakan disiplin / tatatertib pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_disiplin') else ''}</td><td class="center-text">{'✔' if not info.get('s_disiplin') else ''}</td><td></td></tr>
+<tr><td>Markah Penilaian Prestasi Tahunan (LNPT) adalah 85% dan ke atas pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_lnpt_semasa') else ''}</td><td class="center-text">{'✔' if not info.get('s_lnpt_semasa') else ''}</td><td>{info.get('m_lnpt_semasa', '')}</td></tr>
+<tr><td>Memperoleh markah LNPT 85% dan ke atas untuk tahun sebelum tahun penilaian</td><td class="center-text">{'✔' if info.get('s_lnpt_sebelum') else ''}</td><td class="center-text">{'✔' if not info.get('s_lnpt_sebelum') else ''}</td><td>{info.get('m_lnpt_sebelum', '')}</td></tr>
+</table>
+<br>
+<h4>PENILAIAN 360 DARJAH APC-ASM</h4>
+<table>
+<tr><th>No</th><th>Kumpulan Pegawai</th><th>Pegawai Penilai</th><th>Markah</th></tr>
+"""
     
     revs = pd.read_sql(text("SELECT r.reviewer_username, rev.full_name, r.responses FROM reviews r LEFT JOIN reviewers rev ON r.reviewer_username = rev.username WHERE r.applicant_name=:n"), engine, params={"n":app_name})
     
@@ -269,20 +269,20 @@ def render_report_card(engine, app_name):
         total_score += score
         max_score += 25
         
-        html += f"\n            <tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>"
+        html += f"<tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>\n"
         
     html += f"""
-            <tr><th colspan="3" style="text-align:right;">Jumlah Markah Penilaian 360 Darjah</th><th class="center-text">{total_score} / {max_score if max_score > 0 else 100}</th></tr>
-        </table>
-        <br><br><br>
-        <table style="border:none;">
-            <tr style="border:none;">
-                <td style="border:none; width:50%;">Disediakan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
-                <td style="border:none; width:50%;">Disahkan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
-            </tr>
-        </table>
-    </div>
-    """
+<tr><th colspan="3" style="text-align:right;">Jumlah Markah Penilaian 360 Darjah</th><th class="center-text">{total_score} / {max_score if max_score > 0 else 100}</th></tr>
+</table>
+<br><br><br>
+<table style="border:none;">
+<tr style="border:none;">
+<td style="border:none; width:50%;">Disediakan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
+<td style="border:none; width:50%;">Disahkan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
+</tr>
+</table>
+</div>
+"""
     
     st.markdown(html, unsafe_allow_html=True)
 
