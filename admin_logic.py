@@ -197,7 +197,12 @@ def render_report_card(engine, app_name):
         @media print {
             [data-testid="stSidebar"], header, footer, #MainMenu { display: none !important; }
             .stButton { display: none !important; }
-            .main .block-container { padding-top: 1rem !important; max-width: 100% !important; }
+            html, body, [data-testid="stAppViewContainer"], [data-testid="stMainBlockContainer"], .stApp {
+                height: auto !important;
+                min-height: 100% !important;
+                overflow: visible !important;
+            }
+            .main .block-container { padding-top: 1rem !important; max-width: 100% !important; overflow: visible !important; }
         }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid black; padding: 8px; text-align: left; }
@@ -320,18 +325,18 @@ def render_management(menu, engine, hash_password, delete_item):
 
         for idx, row in apps_df.iterrows():
             with st.container(border=True):
-                ca, cb, cc = st.columns([0.1, 3, 1.5])
+                ca, cb, cc = st.columns([0.1, 2.5, 2])
                 ca.write(f"{idx+1}")
                 asm_id_str = row['proposal_title'] if row['proposal_title'] else 'Tiada ID'
                 cb.write(f"**{row['name']}** ({asm_id_str})")
                 cb.caption(f"💼 Jawatan: {row['institution'] or 'N/A'} | Gred: {row['info_link'] or 'N/A'} | Bahagian: {row['remarks'] or 'N/A'}")
                 
-                ced1, ced2, ced3 = cc.columns(3)
-                if ced1.button("📝", key=f"ed_ap_{row['id']}", help="Sunting Calon & Syarat"): edit_applicant_dialog(engine, row)
-                if ced2.button("📄", key=f"rc_ap_{row['id']}", help="Lihat Kad Laporan"):
+                ced1, ced2, ced3 = cc.columns([1, 1.2, 1])
+                if ced1.button("📝 Sunting", key=f"ed_ap_{row['id']}", help="Sunting Calon & Syarat"): edit_applicant_dialog(engine, row)
+                if ced2.button("📄 Laporan", key=f"rc_ap_{row['id']}", help="Lihat Kad Laporan"):
                     st.session_state.report_card_app = row['name']
                     st.rerun()
-                if ced3.button("🗑️", key=f"del_ap_{row['id']}", help="Padam Calon"): delete_item("applicants", row['id'])
+                if ced3.button("🗑️ Padam", key=f"del_ap_{row['id']}", help="Padam Calon"): delete_item("applicants", row['id'])
                 
                 curr = assign_df[assign_df['applicant_name'] == row['name']]['reviewer_username'].tolist()
                 sel = st.multiselect("Tugaskan Penilai:", options=list(rev_map.keys()), default=curr, format_func=lambda x: rev_map.get(x), key=f"p1_sel_{row['id']}")
