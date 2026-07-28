@@ -23,18 +23,21 @@ def get_local_image_base64(username):
 @st.dialog("📝 Sunting Calon")
 def edit_applicant_dialog(engine, app_data):
     with st.form("edit_app_form"):
-        new_name = st.text_input("Nama Penuh", value=app_data['name'])
+        new_photo = st.file_uploader("Gambar (Sila abaikan jika tiada perubahan)", type=['jpg', 'jpeg', 'png'])
+        new_id = st.text_input("No ID ASM", value=app_data.get('proposal_title', ''))
+        new_name = st.text_input("Nama Calon", value=app_data['name'])
         new_inst = st.text_input("Jawatan", value=app_data['institution'])
-        
-        # Keep old values for hidden fields to avoid DB constraint issues
-        new_title = app_data.get('proposal_title', '')
-        new_link = app_data.get('info_link', '')
-        new_rem = app_data.get('remarks', '')
+        new_gred = st.text_input("Gred", value=app_data.get('info_link', ''))
+        new_bahagian = st.text_input("Bahagian / Unit", value=app_data.get('remarks', ''))
         
         if st.form_submit_button("Kemaskini Calon", type="primary"):
             with engine.begin() as conn:
-                conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r WHERE id=:id"),
-                             {"n":new_name, "t":new_title, "i":new_inst, "l":new_link, "r":new_rem, "id":app_data['id']})
+                if new_photo:
+                    conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r, photo=:p WHERE id=:id"),
+                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "p":new_photo.read(), "id":app_data['id']})
+                else:
+                    conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r WHERE id=:id"),
+                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "id":app_data['id']})
             st.cache_resource.clear(); st.success("✅ Telah Dikemas kini!"); time.sleep(1); st.rerun()
 
 @st.dialog("📝 Sunting Penilai")
@@ -55,16 +58,16 @@ def edit_reviewer_dialog(engine, rev_data, hash_password):
 
 @st.dialog("📚 Tambah Calon Berkelompok")
 def bulk_add_applicants_dialog(engine):
-    st.markdown("**Format:** `Nama Calon, Jawatan` (Satu baris untuk setiap calon)")
+    st.markdown("**Format:** `No ID ASM, Nama Calon, Jawatan, Gred, Bahagian/Unit` (Satu baris untuk setiap calon)")
     raw_data = st.text_area("Tampal senarai calon di sini", height=200)
     if st.button("Import Calon", type="primary"):
         lines = [line.strip() for line in raw_data.split('\n') if line.strip()]
         with engine.begin() as conn:
             for line in lines:
                 parts = [p.strip() for p in line.split(',')]
-                if len(parts) >= 1:
-                    conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks) VALUES (:n, :t, :i, :l, :r) ON CONFLICT (name) DO NOTHING"), 
-                                 {"n":parts[0], "t":"", "i":parts[1] if len(parts)>1 else "", "l":"", "r":""})
+                if len(parts) >= 2:
+                    conn.execute(text("INSERT INTO applicants (proposal_title, name, institution, info_link, remarks) VALUES (:t, :n, :i, :l, :r) ON CONFLICT (name) DO NOTHING"), 
+                                 {"t":parts[0], "n":parts[1], "i":parts[2] if len(parts)>2 else "", "l":parts[3] if len(parts)>3 else "", "r":parts[4] if len(parts)>4 else ""})
         st.cache_resource.clear(); st.success("✅ Selesai!"); time.sleep(1); st.rerun()
 
 @st.dialog("📚 Tambah Penilai Berkelompok")
@@ -160,12 +163,17 @@ def render_management(menu, engine, hash_password, delete_item):
         
         with st.expander("➕ Tambah Calon Baru"):
             with st.form("add_app_single", clear_on_submit=True):
+                p = st.file_uploader("Gambar", type=['jpg', 'jpeg', 'png'])
+                asm_id = st.text_input("No ID ASM")
                 n = st.text_input("Nama Calon*")
                 i = st.text_input("Jawatan")
+                gred = st.text_input("Gred")
+                b = st.text_input("Bahagian / Unit")
                 if st.form_submit_button("Simpan Calon", type="primary"):
                     if n:
                         with engine.begin() as conn:
-                            conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks) VALUES (:n, :t, :i, :l, :r)"), {"n":n, "t":"", "i":i, "l":"", "r":""})
+                            conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks, photo) VALUES (:n, :t, :i, :l, :r, :p)"), 
+                                         {"n":n, "t":asm_id, "i":i, "l":gred, "r":b, "p":p.read() if p else None})
                         st.cache_resource.clear(); st.success("✅ Telah Ditambah!"); time.sleep(1); st.rerun()
 
         revs_df = pd.read_sql("SELECT username, full_name FROM reviewers", engine)
@@ -176,8 +184,9 @@ def render_management(menu, engine, hash_password, delete_item):
             with st.container(border=True):
                 ca, cb, cc = st.columns([0.1, 3, 1.2])
                 ca.write(f"{idx+1}")
-                cb.write(f"**{row['name']}**")
-                cb.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
+                asm_id_str = row['proposal_title'] if row['proposal_title'] else 'Tiada ID'
+                cb.write(f"**{row['name']}** ({asm_id_str})")
+                cb.caption(f"💼 Jawatan: {row['institution'] or 'N/A'} | Gred: {row['info_link'] or 'N/A'} | Bahagian: {row['remarks'] or 'N/A'}")
                 
                 ced1, ced2 = cc.columns(2)
                 if ced1.button("📝 Sunting", key=f"ed_ap_{row['id']}"): edit_applicant_dialog(engine, row)
