@@ -20,24 +20,62 @@ def get_local_image_base64(username):
 
 # --- 2. DIALOGS (APPLICANTS & REVIEWERS) ---
 
-@st.dialog("📝 Sunting Calon")
+@st.dialog("📝 Sunting Calon (Beserta Maklumat Kad Laporan)", width="large")
 def edit_applicant_dialog(engine, app_data):
-    with st.form("edit_app_form"):
-        new_photo = st.file_uploader("Gambar (Sila abaikan jika tiada perubahan)", type=['jpg', 'jpeg', 'png'])
-        new_id = st.text_input("No ID ASM", value=app_data.get('proposal_title', ''))
-        new_name = st.text_input("Nama Calon", value=app_data['name'])
-        new_inst = st.text_input("Jawatan", value=app_data['institution'])
-        new_gred = st.text_input("Gred", value=app_data.get('info_link', ''))
-        new_bahagian = st.text_input("Bahagian / Unit", value=app_data.get('remarks', ''))
+    info = {}
+    if app_data.get('additional_info'):
+        try:
+            info = json.loads(app_data['additional_info'])
+        except: pass
         
-        if st.form_submit_button("Kemaskini Calon", type="primary"):
+    with st.form("edit_app_form"):
+        st.subheader("Maklumat Asas")
+        new_photo = st.file_uploader("Gambar (Sila abaikan jika tiada perubahan)", type=['jpg', 'jpeg', 'png'])
+        c1, c2 = st.columns(2)
+        new_id = c1.text_input("No ID ASM", value=app_data.get('proposal_title', ''))
+        new_name = c2.text_input("Nama Calon", value=app_data['name'])
+        c3, c4, c5 = st.columns(3)
+        new_inst = c3.text_input("Jawatan", value=app_data.get('institution', ''))
+        new_gred = c4.text_input("Gred", value=app_data.get('info_link', ''))
+        new_bahagian = c5.text_input("Bahagian / Unit", value=app_data.get('remarks', ''))
+        
+        st.divider()
+        st.subheader("Maklumat Report Card (Syarat Kelayakan)")
+        rc1, rc2 = st.columns(2)
+        r_tahun = rc1.text_input("Tahun Penilaian", value=info.get("tahun_penilaian", ""))
+        r_kump = rc2.text_input("Kumpulan Perkhidmatan", value=info.get("kump_perkhidmatan", ""))
+        
+        rc3, rc4 = st.columns(2)
+        r_tarikh = rc3.text_input("Tarikh Bermula Berkhidmat", value=info.get("tarikh_mula", ""))
+        r_tempoh = rc4.text_input("Tempoh Berkhidmat (Tahun pada 31 Disember)", value=info.get("tempoh_khidmat", ""))
+        r_rekod = st.text_input("Rekod Penerimaan APC", value=info.get("rekod_apc", "Tiada"))
+        
+        st.markdown("**Semakan Syarat (Tanda jika Ya)**")
+        s1 = st.checkbox("Kakitangan bertaraf Tetap / Contract of Service (CoS)", value=info.get("s_tetap", False))
+        s2 = st.checkbox("Kakitangan adalah di Gred 14 dan ke bawah", value=info.get("s_gred14", False))
+        s3 = st.checkbox("Telah berkhidmat sekurang-kurangnya satu (1) tahun pada tahun penilaian", value=info.get("s_setahun", False))
+        s4 = st.checkbox("Bebas daripada tindakan disiplin / tatatertib", value=info.get("s_disiplin", False))
+        
+        sc1, sc2 = st.columns(2)
+        s5 = sc1.checkbox("Markah LNPT (Tahun Penilaian) >= 85%", value=info.get("s_lnpt_semasa", False))
+        m5 = sc1.text_input("Catatan / Markah LNPT Tahun Penilaian", value=info.get("m_lnpt_semasa", ""))
+        s6 = sc2.checkbox("Markah LNPT (Tahun Sebelum) >= 85%", value=info.get("s_lnpt_sebelum", False))
+        m6 = sc2.text_input("Catatan / Markah LNPT Tahun Sebelum", value=info.get("m_lnpt_sebelum", ""))
+        
+        if st.form_submit_button("Kemaskini Calon & Syarat", type="primary"):
+            add_info = json.dumps({
+                "tahun_penilaian": r_tahun, "kump_perkhidmatan": r_kump, "tarikh_mula": r_tarikh,
+                "tempoh_khidmat": r_tempoh, "rekod_apc": r_rekod, "s_tetap": s1, "s_gred14": s2,
+                "s_setahun": s3, "s_disiplin": s4, "s_lnpt_semasa": s5, "m_lnpt_semasa": m5,
+                "s_lnpt_sebelum": s6, "m_lnpt_sebelum": m6
+            })
             with engine.begin() as conn:
                 if new_photo:
-                    conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r, photo=:p WHERE id=:id"),
-                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "p":new_photo.read(), "id":app_data['id']})
+                    conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r, photo=:p, additional_info=:ai WHERE id=:id"),
+                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "p":new_photo.read(), "ai":add_info, "id":app_data['id']})
                 else:
-                    conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r WHERE id=:id"),
-                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "id":app_data['id']})
+                    conn.execute(text("UPDATE applicants SET name=:n, proposal_title=:t, institution=:i, info_link=:l, remarks=:r, additional_info=:ai WHERE id=:id"),
+                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "ai":add_info, "id":app_data['id']})
             st.cache_resource.clear(); st.success("✅ Telah Dikemas kini!"); time.sleep(1); st.rerun()
 
 @st.dialog("📝 Sunting Penilai")
@@ -152,8 +190,108 @@ def render_dashboard(engine):
     except Exception as e:
         st.error(f"🚨 Ralat Papan Pemuka: {str(e)}")
 
+def render_report_card(engine, app_name):
+    # CSS for print formatting
+    st.markdown("""
+        <style>
+        @media print {
+            [data-testid="stSidebar"], header, footer, #MainMenu { display: none !important; }
+            .stButton { display: none !important; }
+            .main .block-container { padding-top: 1rem !important; max-width: 100% !important; }
+        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .center-text { text-align: center; }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    app_data = pd.read_sql(text("SELECT * FROM applicants WHERE name=:n"), engine, params={"n":app_name})
+    if app_data.empty:
+        st.error("Calon tidak dijumpai.")
+        if st.button("⬅️ Kembali"): st.session_state.report_card_app = None; st.rerun()
+        return
+        
+    app_row = app_data.iloc[0]
+    info = {}
+    try:
+        info = json.loads(app_row['additional_info']) if app_row['additional_info'] else {}
+    except: pass
+    
+    col1, col2 = st.columns([1, 5])
+    if col1.button("⬅️ Kembali"): st.session_state.report_card_app = None; st.rerun()
+    if col2.button("🖨️ Cetak Kad Laporan (PDF)", type="primary"):
+        st.components.v1.html("<script>window.parent.print();</script>", height=0)
+        
+    st.divider()
+    
+    # HTML Report Generation
+    html = f"""
+    <div style="font-family: Arial, sans-serif; color: black; background: white; padding: 20px;">
+        <h3 class="center-text">PENILAIAN ANUGERAH PERKHIDMATAN CEMERLANG, AKADEMI SAINS MALAYSIA (APC-ASM)</h3>
+        <br>
+        <table>
+            <tr><td width="40%">Tahun Penilaian</td><td>: {info.get('tahun_penilaian', '')}</td></tr>
+            <tr><td>Kumpulan Perkhidmatan</td><td>: {info.get('kump_perkhidmatan', '')}</td></tr>
+            <tr><td>Nama Kakitangan</td><td>: {app_row['name']}</td></tr>
+            <tr><td>No. Pekerja (ID ASM)</td><td>: {app_row['proposal_title']}</td></tr>
+            <tr><td>Tarikh Bermula Berkhidmat</td><td>: {info.get('tarikh_mula', '')}</td></tr>
+            <tr><td>Tempoh Berkhidmat pada 31 Disember</td><td>: {info.get('tempoh_khidmat', '')}</td></tr>
+            <tr><td>Rekod Penerimaan APC</td><td>: {info.get('rekod_apc', 'Tiada')}</td></tr>
+        </table>
+        
+        <h4>SYARAT KELAYAKAN APC-ASM</h4>
+        <table>
+            <tr><th>Syarat</th><th>YA</th><th>TIDAK</th><th>CATATAN</th></tr>
+            <tr><td>Kakitangan bertaraf Tetap / Contract of Service (CoS)</td><td class="center-text">{'✔' if info.get('s_tetap') else ''}</td><td class="center-text">{'✔' if not info.get('s_tetap') else ''}</td><td></td></tr>
+            <tr><td>Kakitangan adalah di Gred 14 dan ke bawah</td><td class="center-text">{'✔' if info.get('s_gred14') else ''}</td><td class="center-text">{'✔' if not info.get('s_gred14') else ''}</td><td>{app_row['info_link']}</td></tr>
+            <tr><td>Telah berkhidmat sekurang-kurangnya satu (1) tahun pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_setahun') else ''}</td><td class="center-text">{'✔' if not info.get('s_setahun') else ''}</td><td></td></tr>
+            <tr><td>Bebas daripada tindakan disiplin / tatatertib pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_disiplin') else ''}</td><td class="center-text">{'✔' if not info.get('s_disiplin') else ''}</td><td></td></tr>
+            <tr><td>Markah Penilaian Prestasi Tahunan (LNPT) adalah 85% dan ke atas pada tahun penilaian</td><td class="center-text">{'✔' if info.get('s_lnpt_semasa') else ''}</td><td class="center-text">{'✔' if not info.get('s_lnpt_semasa') else ''}</td><td>{info.get('m_lnpt_semasa', '')}</td></tr>
+            <tr><td>Memperoleh markah LNPT 85% dan ke atas untuk tahun sebelum tahun penilaian</td><td class="center-text">{'✔' if info.get('s_lnpt_sebelum') else ''}</td><td class="center-text">{'✔' if not info.get('s_lnpt_sebelum') else ''}</td><td>{info.get('m_lnpt_sebelum', '')}</td></tr>
+        </table>
+        
+        <h4>PENILAIAN 360 DARJAH APC-ASM</h4>
+        <table>
+            <tr><th>No</th><th>Kumpulan Pegawai</th><th>Pegawai Penilai</th><th>Markah</th></tr>
+    """
+    
+    revs = pd.read_sql(text("SELECT r.reviewer_username, rev.full_name, r.responses FROM reviews r LEFT JOIN reviewers rev ON r.reviewer_username = rev.username WHERE r.applicant_name=:n"), engine, params={"n":app_name})
+    
+    total_score = 0
+    max_score = 0
+    for idx, r_row in revs.iterrows():
+        try:
+            res = json.loads(r_row['responses'])
+            score = int(res.get('total_score', 0))
+        except: score = 0
+        
+        total_score += score
+        max_score += 25
+        
+        html += f"<tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>"
+        
+    html += f"""
+            <tr><th colspan="3" style="text-align:right;">Jumlah Markah Penilaian 360 Darjah</th><th class="center-text">{total_score} / {max_score if max_score > 0 else 100}</th></tr>
+        </table>
+        <br><br><br>
+        <table style="border:none;">
+            <tr style="border:none;">
+                <td style="border:none; width:50%;">Disediakan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
+                <td style="border:none; width:50%;">Disahkan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
+            </tr>
+        </table>
+    </div>
+    """
+    
+    st.markdown(html, unsafe_allow_html=True)
+
 # --- 4. RENDER MANAGEMENT ---
 def render_management(menu, engine, hash_password, delete_item):
+    if st.session_state.get('report_card_app'):
+        render_report_card(engine, st.session_state.report_card_app)
+        return
+
     if menu == "Pengurusan Penilaian":
         apps_df = pd.read_sql("SELECT * FROM applicants ORDER BY id ASC", engine)
         st.header(f"📋 Pengurusan Penilaian (Jumlah: {len(apps_df)})")
@@ -182,15 +320,18 @@ def render_management(menu, engine, hash_password, delete_item):
 
         for idx, row in apps_df.iterrows():
             with st.container(border=True):
-                ca, cb, cc = st.columns([0.1, 3, 1.2])
+                ca, cb, cc = st.columns([0.1, 3, 1.5])
                 ca.write(f"{idx+1}")
                 asm_id_str = row['proposal_title'] if row['proposal_title'] else 'Tiada ID'
                 cb.write(f"**{row['name']}** ({asm_id_str})")
                 cb.caption(f"💼 Jawatan: {row['institution'] or 'N/A'} | Gred: {row['info_link'] or 'N/A'} | Bahagian: {row['remarks'] or 'N/A'}")
                 
-                ced1, ced2 = cc.columns(2)
-                if ced1.button("📝 Sunting", key=f"ed_ap_{row['id']}"): edit_applicant_dialog(engine, row)
-                if ced2.button("🗑️", key=f"del_ap_{row['id']}"): delete_item("applicants", row['id'])
+                ced1, ced2, ced3 = cc.columns(3)
+                if ced1.button("📝", key=f"ed_ap_{row['id']}", help="Sunting Calon & Syarat"): edit_applicant_dialog(engine, row)
+                if ced2.button("📄", key=f"rc_ap_{row['id']}", help="Lihat Kad Laporan"):
+                    st.session_state.report_card_app = row['name']
+                    st.rerun()
+                if ced3.button("🗑️", key=f"del_ap_{row['id']}", help="Padam Calon"): delete_item("applicants", row['id'])
                 
                 curr = assign_df[assign_df['applicant_name'] == row['name']]['reviewer_username'].tolist()
                 sel = st.multiselect("Tugaskan Penilai:", options=list(rev_map.keys()), default=curr, format_func=lambda x: rev_map.get(x), key=f"p1_sel_{row['id']}")

@@ -61,6 +61,11 @@ def init_db():
         conn.execute(text("CREATE TABLE IF NOT EXISTS reviewers (id SERIAL PRIMARY KEY, username TEXT UNIQUE, full_name TEXT, password_hash TEXT)"))
         conn.execute(text("CREATE TABLE IF NOT EXISTS applicants (id SERIAL PRIMARY KEY, name TEXT UNIQUE, proposal_title TEXT, institution TEXT, info_link TEXT, remarks TEXT, photo BYTEA)"))
         
+        # Add additional_info column if not exists
+        try:
+            conn.execute(text("ALTER TABLE applicants ADD COLUMN IF NOT EXISTS additional_info TEXT"))
+        except:
+            pass
         # Phase 1
         conn.execute(text("CREATE TABLE IF NOT EXISTS applicant_assignments (id SERIAL PRIMARY KEY, applicant_name TEXT, reviewer_username TEXT, UNIQUE(applicant_name, reviewer_username))"))
         conn.execute(text("CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, reviewer_username TEXT, applicant_name TEXT, responses TEXT, final_recommendation TEXT, overall_justification TEXT, is_final BOOLEAN DEFAULT FALSE, submitted_at TEXT, updated_at TEXT, UNIQUE(reviewer_username, applicant_name))"))
