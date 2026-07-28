@@ -26,8 +26,8 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     with st.container(border=True):
         col_icon, col_greet = st.columns([1, 10])
         col_icon.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=65)
-        col_greet.markdown(f"### Welcome back, {st.session_state.full_name}!")
-        col_greet.caption(f"🔬 Logged in as: {st.session_state.username} | Role: Reviewer | {phase_name}")
+        col_greet.markdown(f"### Selamat kembali, {st.session_state.full_name}!")
+        col_greet.caption(f"🔬 Log masuk sebagai: {st.session_state.username} | Peranan: Penilai | {phase_name}")
 
     is_locked = pd.read_sql(text(f"SELECT COUNT(*) FROM {table_reviews} WHERE reviewer_username = :u AND is_final = TRUE"),
                             engine, params={"u": st.session_state.username}).iloc[0,0] > 0
@@ -106,7 +106,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                                       engine, params={"u": st.session_state.username})
             reviews_lookup = rev_records.set_index('applicant_name').to_dict('index')
 
-            st.subheader(f"Assigned Applicant Gallery ({phase_name})")
+            st.subheader(f"Galeri Calon yang Ditugaskan ({phase_name})")
             for i in range(0, len(apps), 4):
                 cols = st.columns(4)
                 for j in range(4):
