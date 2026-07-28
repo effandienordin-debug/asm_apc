@@ -269,7 +269,7 @@ def render_report_card(engine, app_name):
         total_score += score
         max_score += 25
         
-        html += f"<tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>"
+        html += f"\n            <tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>"
         
     html += f"""
             <tr><th colspan="3" style="text-align:right;">Jumlah Markah Penilaian 360 Darjah</th><th class="center-text">{total_score} / {max_score if max_score > 0 else 100}</th></tr>
