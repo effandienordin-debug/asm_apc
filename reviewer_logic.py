@@ -80,10 +80,10 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
 
             # Check if all applicants have been evaluated (so we can show the submit button)
             total_assigned = pd.read_sql(text(f"SELECT COUNT(*) FROM applicant_assignments WHERE reviewer_username = :u"), engine, params={"u": st.session_state.username}).iloc[0,0]
-            total_other_evaluated = pd.read_sql(text(f"SELECT COUNT(*) FROM {table_reviews} WHERE reviewer_username = :u AND applicant_name != :a"), engine, params={"u": st.session_state.username, "a": name}).iloc[0,0]
+            total_evaluated = pd.read_sql(text(f"SELECT COUNT(*) FROM {table_reviews} WHERE reviewer_username = :u"), engine, params={"u": st.session_state.username}).iloc[0,0]
             
-            # If they have evaluated all other applicants, then this one makes it complete
-            if (total_other_evaluated + 1) >= total_assigned:
+            # Button is ONLY shown if all applicants are fully evaluated (including this one)
+            if total_evaluated >= total_assigned and total_assigned > 0:
                 if st.button("🚀 Hantar Penilaian Akhir", use_container_width=True, type="secondary"):
                     is_incomplete = False
                     if is_incomplete:
