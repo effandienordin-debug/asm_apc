@@ -214,19 +214,22 @@ def render_report_card(engine, app_name):
 <meta charset="utf-8">
 <title>Kad Laporan APC - {app_row['name']}</title>
 <style>
-    body {{ font-family: Arial, sans-serif; color: black; background: white; padding: 20px; }}
-    table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-    th, td {{ border: 1px solid black; padding: 8px; text-align: left; }}
+    body {{ font-family: Arial, sans-serif; color: black; background: white; padding: 10px; font-size: 12px; }}
+    h3 {{ font-size: 14px; margin-bottom: 10px; }}
+    h4 {{ font-size: 13px; margin-top: 15px; margin-bottom: 5px; }}
+    table {{ width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; }}
+    th, td {{ border: 1px solid black; padding: 4px 6px; text-align: left; }}
     th {{ background-color: #f2f2f2; }}
     .center-text {{ text-align: center; }}
     .print-btn {{
-        background-color: #FF4B4B; color: white; padding: 10px 20px; border: none;
-        border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold;
-        margin-bottom: 20px;
+        background-color: #FF4B4B; color: white; padding: 8px 16px; border: none;
+        border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: bold;
+        margin-bottom: 10px;
     }}
     .print-btn:hover {{ background-color: #ff3333; }}
     @media print {{
-        @page {{ margin: 1cm; }}
+        @page {{ size: A4; margin: 10mm; }}
+        body {{ padding: 0; }}
         .no-print {{ display: none !important; }}
     }}
 </style>
