@@ -236,10 +236,22 @@ def render_management(menu, engine, hash_password, delete_item):
         revs = pd.read_sql("SELECT * FROM reviewers ORDER BY id ASC", engine)
         for _, r in revs.iterrows():
             with st.container(border=True):
-                ca, cb = st.columns([4, 1.2])
+                ca, cb = st.columns([3.5, 1.5])
                 ca.write(f"**{r['full_name']}** ({r['username']})")
                 
-                # --- BUTANG EDIT UNTUK REVIEWER ---
-                ced1, ced2 = cb.columns(2)
-                if ced1.button("📝", key=f"ed_rev_{r['id']}"): edit_reviewer_dialog(engine, r, hash_password)
-                if ced2.button("🗑️", key=f"del_rev_{r['id']}"): delete_item("reviewers", r['id'])
+                # Check if reviewer has locked forms
+                locked_count = pd.read_sql(text("SELECT COUNT(*) FROM reviews WHERE reviewer_username = :u AND is_final = TRUE"), engine, params={"u": r['username']}).iloc[0,0]
+                if locked_count > 0:
+                    ca.caption(f"🔒 {locked_count} borang penilaian telah dikunci (Final)")
+                
+                # --- BUTANG UNTUK REVIEWER ---
+                ced1, ced2, ced3 = cb.columns(3)
+                if ced1.button("📝", key=f"ed_rev_{r['id']}", help="Sunting Penilai"): edit_reviewer_dialog(engine, r, hash_password)
+                if ced2.button("🗑️", key=f"del_rev_{r['id']}", help="Padam Penilai"): delete_item("reviewers", r['id'])
+                
+                if locked_count > 0:
+                    if ced3.button("🔓", key=f"unl_rev_{r['id']}", help="Buka Kunci Borang (Unlock)"):
+                        with engine.begin() as conn:
+                            conn.execute(text("UPDATE reviews SET is_final = FALSE WHERE reviewer_username = :u"), {"u": r['username']})
+                        st.cache_resource.clear()
+                        st.success("✅ Borang telah dibuka kunci!"); time.sleep(1); st.rerun()
