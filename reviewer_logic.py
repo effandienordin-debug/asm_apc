@@ -18,9 +18,9 @@ def get_assigned_applicants(_engine, username):
 # --- 2. RENDER REVIEW FORM & GALLERY ---
 def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     table_reviews = "reviews"
-    phase_name = "Penilaian 360 Darjah APC"
+    phase_name = "Penilaian 360 Darjah untuk calon APC-2025"
 
-    st.markdown(f"## 📋 ASM APC: {phase_name}")
+    st.markdown(f"## 📋 {phase_name}")
     st.divider()
 
     with st.container(border=True):
