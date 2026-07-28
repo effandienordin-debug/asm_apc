@@ -4,9 +4,6 @@ from database_utils import get_radio_index
 def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     st.subheader("📋 Penilaian 360 Darjah untuk calon APC-2025")
     st.info("Sila berikan markah (1 - 5) berdasarkan kriteria kecekapan utama di bawah. Markah akan dikira secara automatik.")
-    st.warning("""**Berikut nota penting yang perlu diambil perhatian bagi setiap penilai:**
-• Sila isi ruang kosong dengan SATU NOMBOR berdasarkan skala 1 hingga 5 (tidak memuaskan-cemerlang) dan terdapat lima (5) aspek yang akan dinilai.
-• Tidak berkongsi apa-apa maklumat berkaitan Penilaian 360° (APC-ASM) ini kepada mana-mana kakitangan/individu. Penilaian perlu dilakukan secara sulit supaya proses penilaian dapat dilaksanakan dengan lebih objektif, fokus dan teliti.""")
     
     def get_val(key, default=1):
         val = prev_responses.get(key, default)

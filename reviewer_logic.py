@@ -29,6 +29,10 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
         col_greet.markdown(f"### Selamat kembali, {st.session_state.full_name}!")
         col_greet.caption(f"🔬 Log masuk sebagai: {st.session_state.username} | Peranan: Penilai | {phase_name}")
 
+    st.warning("""**Berikut nota penting yang perlu diambil perhatian bagi setiap penilai:**
+• Sila isi ruang kosong dengan SATU NOMBOR berdasarkan skala 1 hingga 5 (tidak memuaskan-cemerlang) dan terdapat lima (5) aspek yang akan dinilai.
+• Tidak berkongsi apa-apa maklumat berkaitan Penilaian 360° (APC-ASM) ini kepada mana-mana kakitangan/individu. Penilaian perlu dilakukan secara sulit supaya proses penilaian dapat dilaksanakan dengan lebih objektif, fokus dan teliti.""")
+
     is_locked = pd.read_sql(text(f"SELECT COUNT(*) FROM {table_reviews} WHERE reviewer_username = :u AND is_final = TRUE"),
                             engine, params={"u": st.session_state.username}).iloc[0,0] > 0
 
