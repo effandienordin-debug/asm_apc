@@ -78,28 +78,8 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
                     st.success("Draf dikemas kini. Anda boleh teruskan suntingan atau kembali ke senarai.")
                     st.rerun() # Stay on the page
 
-            # Check if all applicants have been evaluated (so we can show the submit button)
-            total_assigned = pd.read_sql(text(f"SELECT COUNT(*) FROM applicant_assignments WHERE reviewer_username = :u"), engine, params={"u": st.session_state.username}).iloc[0,0]
-            total_evaluated = pd.read_sql(text(f"SELECT COUNT(*) FROM {table_reviews} WHERE reviewer_username = :u"), engine, params={"u": st.session_state.username}).iloc[0,0]
-            
-            # Button is ONLY shown if all applicants are fully evaluated (including this one)
-            if total_evaluated >= total_assigned and total_assigned > 0:
-                if st.button("🚀 Hantar Penilaian Akhir", use_container_width=True, type="secondary"):
-                    is_incomplete = False
-                    if is_incomplete:
-                        st.error("🚨 Sila isikan markah sebelum menghantar.")
-                    else:
-                        with engine.begin() as conn:
-                            if not rev.empty:
-                                conn.execute(text(f"UPDATE {table_reviews} SET responses=:r, final_recommendation=:fr, overall_justification=:oj, updated_at=:t, is_final=TRUE WHERE id=:id"),
-                                             {"r":json.dumps(res["responses"]), "fr":res["recommendation"], "oj":res["justification"], "t":get_malaysia_time(), "id":int(rev.iloc[0]['id'])})
-                            else:
-                                conn.execute(text(f"INSERT INTO {table_reviews} (reviewer_username, applicant_name, responses, final_recommendation, overall_justification, submitted_at, updated_at, is_final) VALUES (:u, :a, :r, :fr, :oj, :t, :t, TRUE)"),
-                                             {"u":st.session_state.username, "a":name, "r":json.dumps(res["responses"]), "fr":res["recommendation"], "oj":res["justification"], "t":get_malaysia_time()})
-                        st.cache_resource.clear()
-                        st.toast("✅ Penilaian Dihantar!")
-                        st.session_state.active_review_app = None
-                        st.rerun()
+            # Button Hantar Penilaian Akhir has been removed from the individual form
+            # Reviewers must go back to the dashboard to lock all submissions
 
         if st.button("⬅️ Kembali ke Senarai Calon", use_container_width=True):
             st.session_state.active_review_app = None
