@@ -203,7 +203,10 @@ def render_report_card(engine, app_name):
         info = json.loads(app_row['additional_info']) if app_row['additional_info'] else {}
     except: pass
     
-    # HTML Report Generation for Print (Stand-alone Document)
+    if st.button("⬅️ Kembali"): st.session_state.report_card_app = None; st.rerun()
+    st.divider()
+
+    # HTML Report Generation for Print (Inside iframe)
     html_content = f"""
 <!DOCTYPE html>
 <html>
@@ -216,12 +219,22 @@ def render_report_card(engine, app_name):
     th, td {{ border: 1px solid black; padding: 8px; text-align: left; }}
     th {{ background-color: #f2f2f2; }}
     .center-text {{ text-align: center; }}
+    .print-btn {{
+        background-color: #FF4B4B; color: white; padding: 10px 20px; border: none;
+        border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold;
+        margin-bottom: 20px;
+    }}
+    .print-btn:hover {{ background-color: #ff3333; }}
     @media print {{
         @page {{ margin: 1cm; }}
+        .no-print {{ display: none !important; }}
     }}
 </style>
 </head>
-<body onload="setTimeout(function(){{ window.print(); }}, 500);">
+<body>
+<div class="no-print" style="text-align: right;">
+    <button class="print-btn" onclick="window.print()">🖨️ Cetak Kad Laporan (PDF)</button>
+</div>
 <h3 class="center-text">PENILAIAN ANUGERAH PERKHIDMATAN CEMERLANG, AKADEMI SAINS MALAYSIA (APC-ASM)</h3>
 <br>
 <table>
@@ -279,31 +292,8 @@ def render_report_card(engine, app_name):
 </html>
 """
     
-    # Create a Base64 URL for printing in a new tab
-    b64_html = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
-    href = f"data:text/html;base64,{b64_html}"
-    
-    col1, col2 = st.columns([1, 5])
-    if col1.button("⬅️ Kembali"): st.session_state.report_card_app = None; st.rerun()
-    col2.markdown(f'<a href="{href}" target="_blank" style="text-decoration:none; background-color:#FF4B4B; color:white; padding:8px 16px; border-radius:4px; font-family:sans-serif; display:inline-block; margin-top:2px; font-size:14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🖨️ Cetak Kad Laporan (PDF)</a>', unsafe_allow_html=True)
-    
-    st.divider()
-    
-    # Extract just the body content for the Streamlit preview
-    body_content = html_content.split('<body onload="setTimeout(function(){ window.print(); }, 500);">')[1].replace('</body>', '').replace('</html>', '')
-    
-    # Render preview inside Streamlit with inline CSS to prevent Markdown interference
-    st.markdown(f"""
-    <style>
-        .preview-box table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-        .preview-box th, .preview-box td {{ border: 1px solid black; padding: 8px; text-align: left; }}
-        .preview-box th {{ background-color: #f2f2f2; }}
-        .preview-box .center-text {{ text-align: center; }}
-    </style>
-    <div class="preview-box" style="font-family: Arial, sans-serif; color: black; background: white; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        {body_content}
-    </div>
-    """, unsafe_allow_html=True)
+    # Render the entire HTML (preview + print logic) cleanly inside an iframe
+    st.components.v1.html(html_content, height=1000, scrolling=True)
 
 
 
