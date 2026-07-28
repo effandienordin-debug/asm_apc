@@ -75,28 +75,34 @@ if not is_auth:
         st.image("asm-logo.png", width=250)
         st.subheader("🔐 Log masuk Penilaian 360 Darjah untuk calon APC-2025")
         with st.form("login_form"):
-            login_role = st.radio("Log masuk sebagai:", ["Penilai", "Admin"], horizontal=True)
             u_input = st.text_input("Nama Pengguna (Username)").strip()
             p_input = st.text_input("Kata Laluan (Password)", type="password")
             
             if st.form_submit_button("Log Masuk", use_container_width=True):
                 with engine.connect() as conn:
-                    tbl = "users" if login_role == "Admin" else "reviewers"
-                    res = conn.execute(text(f"SELECT password_hash, full_name, username FROM {tbl} WHERE LOWER(username) = LOWER(:u)"), {"u": u_input}).fetchone()
-
-                    if res and check_password(p_input, res[0]):
-                        role = "Admin" if login_role == "Admin" else "Reviewer"
-                        real_username = res[2]
-                        # 1. Update Session
-                        st.session_state.update({"authenticated": True, "username": real_username, "role": role, "full_name": res[1]})
-                        # 2. Update URL Params (Untuk Speed Refresh)
-                        st.query_params.update({"u": real_username, "r": role, "n": res[1]})
-                        # 3. Update Cookies (Untuk Long-term)
-                        cookie_manager.set('rbs_session', json.dumps({"u": real_username, "r": role, "n": res[1]}), expires_at=datetime.now() + timedelta(days=1))
-                        
-                        st.success("Log masuk berjaya!"); time.sleep(0.5); st.rerun()
+                    # Semak kalau ini adalah Admin (jadual users)
+                    res_admin = conn.execute(text("SELECT password_hash, full_name, username FROM users WHERE LOWER(username) = LOWER(:u)"), {"u": u_input}).fetchone()
+                    
+                    if res_admin and check_password(p_input, res_admin[0]):
+                        role = "Admin"
+                        real_username = res_admin[2]
+                        st.session_state.update({"authenticated": True, "username": real_username, "role": role, "full_name": res_admin[1]})
+                        st.query_params.update({"u": real_username, "r": role, "n": res_admin[1]})
+                        cookie_manager.set('rbs_session', json.dumps({"u": real_username, "r": role, "n": res_admin[1]}), expires_at=datetime.now() + timedelta(days=1))
+                        st.success("Log masuk Admin berjaya!"); time.sleep(0.5); st.rerun()
                     else:
-                        st.error("Butiran log masuk tidak sah.")
+                        # Semak kalau ini adalah Penilai (jadual reviewers)
+                        res_rev = conn.execute(text("SELECT password_hash, full_name, username FROM reviewers WHERE LOWER(username) = LOWER(:u)"), {"u": u_input}).fetchone()
+                        
+                        if res_rev and check_password(p_input, res_rev[0]):
+                            role = "Reviewer"
+                            real_username = res_rev[2]
+                            st.session_state.update({"authenticated": True, "username": real_username, "role": role, "full_name": res_rev[1]})
+                            st.query_params.update({"u": real_username, "r": role, "n": res_rev[1]})
+                            cookie_manager.set('rbs_session', json.dumps({"u": real_username, "r": role, "n": res_rev[1]}), expires_at=datetime.now() + timedelta(days=1))
+                            st.success("Log masuk berjaya!"); time.sleep(0.5); st.rerun()
+                        else:
+                            st.error("Butiran log masuk tidak sah.")
     st.stop()
 
 # --- 6. SIDEBAR & NAVIGATION ---
