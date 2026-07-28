@@ -191,26 +191,6 @@ def render_dashboard(engine):
         st.error(f"🚨 Ralat Papan Pemuka: {str(e)}")
 
 def render_report_card(engine, app_name):
-    # CSS for print formatting
-    st.markdown("""
-        <style>
-        @media print {
-            [data-testid="stSidebar"], header, footer, #MainMenu { display: none !important; }
-            .stButton { display: none !important; }
-            html, body, [data-testid="stAppViewContainer"], [data-testid="stMainBlockContainer"], .stApp {
-                height: auto !important;
-                min-height: 100% !important;
-                overflow: visible !important;
-            }
-            .main .block-container { padding-top: 1rem !important; max-width: 100% !important; overflow: visible !important; }
-        }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid black; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .center-text { text-align: center; }
-        </style>
-    """, unsafe_allow_html=True)
-    
     app_data = pd.read_sql(text("SELECT * FROM applicants WHERE name=:n"), engine, params={"n":app_name})
     if app_data.empty:
         st.error("Calon tidak dijumpai.")
@@ -223,16 +203,25 @@ def render_report_card(engine, app_name):
         info = json.loads(app_row['additional_info']) if app_row['additional_info'] else {}
     except: pass
     
-    col1, col2 = st.columns([1, 5])
-    if col1.button("⬅️ Kembali"): st.session_state.report_card_app = None; st.rerun()
-    if col2.button("🖨️ Cetak Kad Laporan (PDF)", type="primary"):
-        st.components.v1.html("<script>window.parent.print();</script>", height=0)
-        
-    st.divider()
-    
-    # HTML Report Generation
-    html = f"""
-<div style="font-family: Arial, sans-serif; color: black; background: white; padding: 20px;">
+    # HTML Report Generation for Print (Stand-alone Document)
+    html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kad Laporan APC - {app_row['name']}</title>
+<style>
+    body {{ font-family: Arial, sans-serif; color: black; background: white; padding: 20px; }}
+    table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+    th, td {{ border: 1px solid black; padding: 8px; text-align: left; }}
+    th {{ background-color: #f2f2f2; }}
+    .center-text {{ text-align: center; }}
+    @media print {{
+        @page {{ margin: 1cm; }}
+    }}
+</style>
+</head>
+<body onload="setTimeout(function(){{ window.print(); }}, 500);">
 <h3 class="center-text">PENILAIAN ANUGERAH PERKHIDMATAN CEMERLANG, AKADEMI SAINS MALAYSIA (APC-ASM)</h3>
 <br>
 <table>
@@ -274,9 +263,9 @@ def render_report_card(engine, app_name):
         total_score += score
         max_score += 25
         
-        html += f"<tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>\n"
+        html_content += f"<tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>\n"
         
-    html += f"""
+    html_content += f"""
 <tr><th colspan="3" style="text-align:right;">Jumlah Markah Penilaian 360 Darjah</th><th class="center-text">{total_score} / {max_score if max_score > 0 else 100}</th></tr>
 </table>
 <br><br><br>
@@ -286,10 +275,37 @@ def render_report_card(engine, app_name):
 <td style="border:none; width:50%;">Disahkan oleh:<br><br><br><br>___________________________<br>NAMA<br>JAWATAN<br>URUS SETIA PROGRAM PENGIKTIRAFAN PEGAWAI</td>
 </tr>
 </table>
-</div>
+</body>
+</html>
 """
     
-    st.markdown(html, unsafe_allow_html=True)
+    # Create a Base64 URL for printing in a new tab
+    b64_html = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
+    href = f"data:text/html;base64,{b64_html}"
+    
+    col1, col2 = st.columns([1, 5])
+    if col1.button("⬅️ Kembali"): st.session_state.report_card_app = None; st.rerun()
+    col2.markdown(f'<a href="{href}" target="_blank" style="text-decoration:none; background-color:#FF4B4B; color:white; padding:8px 16px; border-radius:4px; font-family:sans-serif; display:inline-block; margin-top:2px; font-size:14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🖨️ Cetak Kad Laporan (PDF)</a>', unsafe_allow_html=True)
+    
+    st.divider()
+    
+    # Extract just the body content for the Streamlit preview
+    body_content = html_content.split('<body onload="setTimeout(function(){ window.print(); }, 500);">')[1].replace('</body>', '').replace('</html>', '')
+    
+    # Render preview inside Streamlit with inline CSS to prevent Markdown interference
+    st.markdown(f"""
+    <style>
+        .preview-box table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+        .preview-box th, .preview-box td {{ border: 1px solid black; padding: 8px; text-align: left; }}
+        .preview-box th {{ background-color: #f2f2f2; }}
+        .preview-box .center-text {{ text-align: center; }}
+    </style>
+    <div class="preview-box" style="font-family: Arial, sans-serif; color: black; background: white; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        {body_content}
+    </div>
+    """, unsafe_allow_html=True)
+
+
 
 # --- 4. RENDER MANAGEMENT ---
 def render_management(menu, engine, hash_password, delete_item):
