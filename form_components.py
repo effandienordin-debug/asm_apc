@@ -2,7 +2,7 @@ import streamlit as st
 from database_utils import get_radio_index
 
 def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
-    st.subheader("📋 Penilaian 360 Darjah (APC-ASM)")
+    st.subheader("📋 Penilaian 360 Darjah untuk calon APC-2025")
     st.info("Sila berikan markah (1 - 5) berdasarkan kriteria kecekapan utama di bawah. Markah akan dikira secara automatik.")
     
     def get_val(key, default=1):
