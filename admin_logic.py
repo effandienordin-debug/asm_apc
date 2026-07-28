@@ -80,18 +80,22 @@ def edit_applicant_dialog(engine, app_data):
 
 @st.dialog("📝 Sunting Penilai")
 def edit_reviewer_dialog(engine, rev_data, hash_password):
+    kump_options = ["", "FELO ASM", "KETUA PEGAWAI EKSEKUTIF", "KETUA PEGAWAI OPERASI", "KETUA PEGAWAI STRATEGIK", "KETUA PEGAWAI Hal Ehwal Antarabangsa & Komunikasi", "PENGURUSAN DAN PROFESIONAL", "PELAKSANA"]
+    curr_kump = rev_data.get('kumpulan_pegawai', '')
+    k_idx = kump_options.index(curr_kump) if curr_kump in kump_options else 0
     with st.form("edit_rev_form"):
         new_name = st.text_input("Nama Penuh", value=rev_data['full_name'])
         new_user = st.text_input("Nama Pengguna (Username)", value=rev_data['username'], disabled=True) 
+        new_kump = st.selectbox("Kumpulan Pegawai", kump_options, index=k_idx)
         new_pass = st.text_input("Kata Laluan Baru (Biarkan kosong jika tiada perubahan)", type="password")
         if st.form_submit_button("Kemaskini Penilai", type="primary"):
             with engine.begin() as conn:
                 if new_pass.strip():
-                    conn.execute(text("UPDATE reviewers SET full_name=:n, password_hash=:p WHERE id=:id"),
-                                 {"n":new_name, "p":hash_password(new_pass), "id":rev_data['id']})
+                    conn.execute(text("UPDATE reviewers SET full_name=:n, kumpulan_pegawai=:k, password_hash=:p WHERE id=:id"),
+                                 {"n":new_name, "k":new_kump, "p":hash_password(new_pass), "id":rev_data['id']})
                 else:
-                    conn.execute(text("UPDATE reviewers SET full_name=:n WHERE id=:id"),
-                                 {"n":new_name, "id":rev_data['id']})
+                    conn.execute(text("UPDATE reviewers SET full_name=:n, kumpulan_pegawai=:k WHERE id=:id"),
+                                 {"n":new_name, "k":new_kump, "id":rev_data['id']})
             st.cache_resource.clear(); st.success("✅ Telah Dikemas kini!"); time.sleep(1); st.rerun()
 
 @st.dialog("📚 Tambah Calon Berkelompok")
@@ -267,7 +271,7 @@ def render_report_card(engine, app_name):
 <tr><th>No</th><th>Kumpulan Pegawai</th><th>Pegawai Penilai</th><th>Markah</th></tr>
 """
     
-    revs = pd.read_sql(text("SELECT r.reviewer_username, rev.full_name, r.responses FROM reviews r LEFT JOIN reviewers rev ON r.reviewer_username = rev.username WHERE r.applicant_name=:n"), engine, params={"n":app_name})
+    revs = pd.read_sql(text("SELECT r.reviewer_username, rev.full_name, r.responses, rev.kumpulan_pegawai FROM reviews r LEFT JOIN reviewers rev ON r.reviewer_username = rev.username WHERE r.applicant_name=:n"), engine, params={"n":app_name})
     
     total_score = 0
     max_score = 0
@@ -280,7 +284,10 @@ def render_report_card(engine, app_name):
         total_score += score
         max_score += 25
         
-        html_content += f"<tr><td>{idx+1}</td><td>PENILAI</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>\n"
+        kump = r_row.get('kumpulan_pegawai')
+        display_kump = kump if kump else 'PENILAI'
+        
+        html_content += f"<tr><td>{idx+1}</td><td>{display_kump}</td><td>{r_row['full_name']}</td><td class='center-text'>{score} / 25</td></tr>\n"
         
     html_content += f"""
 <tr><th colspan="3" style="text-align:right;">Jumlah Markah Penilaian 360 Darjah</th><th class="center-text">{total_score} / {max_score if max_score > 0 else 100}</th></tr>
@@ -382,11 +389,13 @@ def render_management(menu, engine, hash_password, delete_item):
             with st.form("add_rev_form", clear_on_submit=True):
                 n = st.text_input("Nama Penuh")
                 u = st.text_input("Nama Pengguna (Username)")
+                kump_options = ["", "FELO ASM", "KETUA PEGAWAI EKSEKUTIF", "KETUA PEGAWAI OPERASI", "KETUA PEGAWAI STRATEGIK", "KETUA PEGAWAI Hal Ehwal Antarabangsa & Komunikasi", "PENGURUSAN DAN PROFESIONAL", "PELAKSANA"]
+                kump = st.selectbox("Kumpulan Pegawai", kump_options)
                 p = st.text_input("Kata Laluan", type="password")
                 if st.form_submit_button("Simpan Penilai"):
                     if n and u and p:
                         with engine.begin() as conn:
-                            conn.execute(text("INSERT INTO reviewers (username, full_name, password_hash) VALUES (:u, :n, :p) ON CONFLICT DO NOTHING"), {"u":u.strip(), "n":n.strip(), "p":hash_password(p)})
+                            conn.execute(text("INSERT INTO reviewers (username, full_name, password_hash, kumpulan_pegawai) VALUES (:u, :n, :p, :k) ON CONFLICT DO NOTHING"), {"u":u.strip(), "n":n.strip(), "p":hash_password(p), "k":kump})
                         st.cache_resource.clear(); st.success("✅ Telah Ditambah!"); time.sleep(1); st.rerun()
 
         revs = pd.read_sql("SELECT * FROM reviewers ORDER BY id ASC", engine)
