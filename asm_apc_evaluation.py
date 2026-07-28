@@ -70,33 +70,37 @@ is_auth = sync_auth()
 
 # --- 5. LOGIN INTERFACE ---
 if not is_auth:
-    st.title("🔐 Log Masuk Penilaian APC ASM")
-    with st.form("login_form"):
-        login_role = st.radio("Log masuk sebagai:", ["Penilai", "Admin"], horizontal=True)
-        u_input = st.text_input("Nama Pengguna (Username)").strip()
-        p_input = st.text_input("Kata Laluan (Password)", type="password")
-        
-        if st.form_submit_button("Log Masuk", use_container_width=True):
-            with engine.connect() as conn:
-                tbl = "users" if login_role == "Admin" else "reviewers"
-                res = conn.execute(text(f"SELECT password_hash, full_name FROM {tbl} WHERE username = :u"), {"u": u_input}).fetchone()
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/e/ec/Academy_of_Sciences_Malaysia_logo.png", width=250)
+        st.title("🔐 Log Masuk Penilaian APC ASM")
+        with st.form("login_form"):
+            login_role = st.radio("Log masuk sebagai:", ["Penilai", "Admin"], horizontal=True)
+            u_input = st.text_input("Nama Pengguna (Username)").strip()
+            p_input = st.text_input("Kata Laluan (Password)", type="password")
+            
+            if st.form_submit_button("Log Masuk", use_container_width=True):
+                with engine.connect() as conn:
+                    tbl = "users" if login_role == "Admin" else "reviewers"
+                    res = conn.execute(text(f"SELECT password_hash, full_name FROM {tbl} WHERE username = :u"), {"u": u_input}).fetchone()
 
-                if res and check_password(p_input, res[0]):
-                    role = "Admin" if login_role == "Admin" else "Reviewer"
-                    # 1. Update Session
-                    st.session_state.update({"authenticated": True, "username": u_input, "role": role, "full_name": res[1]})
-                    # 2. Update URL Params (Untuk Speed Refresh)
-                    st.query_params.update({"u": u_input, "r": role, "n": res[1]})
-                    # 3. Update Cookies (Untuk Long-term)
-                    cookie_manager.set('rbs_session', json.dumps({"u": u_input, "r": role, "n": res[1]}), expires_at=datetime.now() + timedelta(days=1))
-                    
-                    st.success("Log masuk berjaya!"); time.sleep(0.5); st.rerun()
-                else:
-                    st.error("Butiran log masuk tidak sah.")
+                    if res and check_password(p_input, res[0]):
+                        role = "Admin" if login_role == "Admin" else "Reviewer"
+                        # 1. Update Session
+                        st.session_state.update({"authenticated": True, "username": u_input, "role": role, "full_name": res[1]})
+                        # 2. Update URL Params (Untuk Speed Refresh)
+                        st.query_params.update({"u": u_input, "r": role, "n": res[1]})
+                        # 3. Update Cookies (Untuk Long-term)
+                        cookie_manager.set('rbs_session', json.dumps({"u": u_input, "r": role, "n": res[1]}), expires_at=datetime.now() + timedelta(days=1))
+                        
+                        st.success("Log masuk berjaya!"); time.sleep(0.5); st.rerun()
+                    else:
+                        st.error("Butiran log masuk tidak sah.")
     st.stop()
 
 # --- 6. SIDEBAR & NAVIGATION ---
 with st.sidebar:
+    st.image("https://upload.wikimedia.org/wikipedia/commons/e/ec/Academy_of_Sciences_Malaysia_logo.png", use_container_width=True)
     st.title(f"👤 {st.session_state.get('full_name')}")
     display_role = "Penilai" if st.session_state.get('role') == "Reviewer" else st.session_state.get('role')
     st.caption(f"Peranan: {display_role}")
