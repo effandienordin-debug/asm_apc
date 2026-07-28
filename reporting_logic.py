@@ -37,30 +37,6 @@ def get_report_data(_engine):
     return df
 
 def render_reporting(engine):
-    # --- 1. CSS PRINT HACK (Updated to hide toasts and align layout) ---
-    st.markdown("""
-        <style>
-        @media print {
-            /* Hide Sidebar, Header, Footer, and Navigation */
-            [data-testid="stSidebar"], header, footer, #MainMenu {
-                display: none !important;
-            }
-            /* HIDE TOAST NOTIFICATIONS (Prevents overlap with title) */
-            [data-testid="stToast"] {
-                display: none !important;
-            }
-            /* Hide all buttons during print */
-            .stButton {
-                display: none !important;
-            }
-            /* Adjust margins for a clean PDF layout */
-            .main .block-container {
-                padding-top: 1rem !important;
-                max-width: 100% !important;
-            }
-        }
-        </style>
-    """, unsafe_allow_html=True)
 
     st.header("📄 Laporan Penilaian APC")
     df = get_report_data(engine)
@@ -81,27 +57,15 @@ def render_reporting(engine):
 
     st.plotly_chart(fig2, use_container_width=True)
 
-    # --- 4. ALIGNED EXPORT BUTTONS ---
+    # --- 4. EXPORT BUTTONS ---
     st.divider()
-    btn_col1, btn_col2 = st.columns(2)
-
-    # Print Button
-    if btn_col1.button("🖨️ Jana PDF Profesional", use_container_width=True, type="primary"):
-        # parent.print() escapes the iframe to print the full page
-        st.components.v1.html("""
-            <script>
-                window.parent.print();
-            </script>
-        """, height=0)
-        st.toast("Membuka tetapan cetakan... Pilih 'Save as PDF'.")
-
-    # CSV Button (Aligned perfectly next to Print)
-    btn_col2.download_button(
+    st.download_button(
         label="📊 Muat Turun Data (CSV)",
         data=filtered_df.to_csv(index=False),
         file_name="ASM_APC_Evaluation_Data_Export.csv",
         mime="text/csv",
-        use_container_width=True
+        use_container_width=True,
+        type="primary"
     )
 
     # --- 5. DATA PREVIEW ---
