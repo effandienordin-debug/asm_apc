@@ -7,8 +7,9 @@ from sqlalchemy import text
 def get_report_data(_engine):
     query = """
         SELECT 
-            r.applicant_name,
             COALESCE(rev.full_name, r.reviewer_username) as reviewer_name,
+            rev.kumpulan_pegawai,
+            r.applicant_name,
             r.responses
         FROM reviews r
         LEFT JOIN reviewers rev ON r.reviewer_username = rev.username
@@ -25,6 +26,12 @@ def get_report_data(_engine):
                 
         parsed = df['responses'].apply(parse_responses)
         
+        df = df.rename(columns={
+            'reviewer_name': 'Nama Penilai',
+            'kumpulan_pegawai': 'Kumpulan Pegawai',
+            'applicant_name': 'Menilai Siapa'
+        })
+        
         df['Daya Kepimpinan'] = parsed.apply(lambda x: int(x.get('kepimpinan', 0)))
         df['Semangat Berpasukan'] = parsed.apply(lambda x: int(x.get('pasukan', 0)))
         df['Kemahiran Interpersonal'] = parsed.apply(lambda x: int(x.get('interpersonal', 0)))
@@ -33,6 +40,10 @@ def get_report_data(_engine):
         df['Jumlah Markah'] = parsed.apply(lambda x: int(x.get('total_score', 0)))
         
         df = df.drop(columns=['responses'])
+        
+        # Susun semula lajur (Reorder columns)
+        cols = ['Nama Penilai', 'Kumpulan Pegawai', 'Menilai Siapa', 'Daya Kepimpinan', 'Semangat Berpasukan', 'Kemahiran Interpersonal', 'Akauntabiliti', 'Inovatif', 'Jumlah Markah']
+        df = df[[c for c in cols if c in df.columns]]
         
     return df
 
@@ -47,13 +58,26 @@ def render_reporting(engine):
 
     # --- 2. FILTERS (Hides in Print automatically due to .stButton/expander logic) ---
     with st.expander("🔍 Tapis Keputusan"):
-        f_rev = st.multiselect("Penilai", df['reviewer_name'].unique(), default=df['reviewer_name'].unique())
+        col1, col2 = st.columns(2)
+        with col1:
+            f_rev = st.multiselect("Penilai", df['Nama Penilai'].unique(), default=df['Nama Penilai'].unique())
+        with col2:
+            # Handle null/None values for Kumpulan Pegawai
+            kp_options = df['Kumpulan Pegawai'].fillna('Tiada Kumpulan').unique()
+            f_kp = st.multiselect("Kumpulan Pegawai", kp_options, default=kp_options)
     
-    filtered_df = df[df['reviewer_name'].isin(f_rev)]
+    # Fill NaN so that filter works smoothly
+    filtered_df = df.copy()
+    filtered_df['Kumpulan Pegawai'] = filtered_df['Kumpulan Pegawai'].fillna('Tiada Kumpulan')
+    
+    filtered_df = filtered_df[
+        (filtered_df['Nama Penilai'].isin(f_rev)) & 
+        (filtered_df['Kumpulan Pegawai'].isin(f_kp))
+    ]
 
     # --- 3. VISUALS ---
-    review_counts = filtered_df.groupby('applicant_name').size().reset_index(name='count')
-    fig2 = px.bar(review_counts, x='applicant_name', y='count', title="Jumlah Penilaian (Reviews) Diterima", text_auto=True)
+    review_counts = filtered_df.groupby('Menilai Siapa').size().reset_index(name='count')
+    fig2 = px.bar(review_counts, x='Menilai Siapa', y='count', title="Jumlah Penilaian (Reviews) Diterima", text_auto=True)
 
     st.plotly_chart(fig2, use_container_width=True)
 
