@@ -296,12 +296,12 @@ def render_dashboard(engine):
                 try:
                     if pd.notna(row['photo']):
                         b64_img = base64.b64encode(row['photo']).decode("utf-8")
-                        photo_html = f"<img src='data:image/jpeg;base64,{b64_img}' style='width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:15px;'/>"
+                        photo_html = f"<img src='data:image/jpeg;base64,{b64_img}' style='width:100px; height:100px; object-fit:cover; border-radius:50%; margin: 0 auto 15px auto; display:block;'/>"
                 except:
                     pass
                 
                 if not photo_html:
-                    photo_html = "<div style='width:100%; height:180px; background-color:#E2E8F0; border-radius:6px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; color:#94A3B8; font-size:12px;'>Tiada Gambar</div>"
+                    photo_html = "<div style='width:100px; height:100px; background-color:#E2E8F0; border-radius:50%; margin: 0 auto 15px auto; display:flex; align-items:center; justify-content:center; color:#94A3B8; font-size:11px; text-align:center;'>Tiada</div>"
                 
                 with cols[i % 3]:
                     st.markdown(f"""
