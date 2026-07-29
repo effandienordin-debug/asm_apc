@@ -20,6 +20,57 @@ def get_local_image_base64(username):
 
 # --- 2. DIALOGS (APPLICANTS & REVIEWERS) ---
 
+@st.dialog("➕ Tambah Calon Baru (Beserta Maklumat Kad Laporan)", width="large")
+def add_applicant_dialog(engine):
+    with st.form("add_app_form"):
+        st.subheader("Maklumat Asas")
+        new_photo = st.file_uploader("Gambar", type=['jpg', 'jpeg', 'png'])
+        c1, c2 = st.columns(2)
+        new_id = c1.text_input("No ID ASM")
+        new_name = c2.text_input("Nama Calon*")
+        c3, c4, c5 = st.columns(3)
+        new_inst = c3.text_input("Jawatan")
+        new_gred = c4.text_input("Gred")
+        new_bahagian = c5.text_input("Bahagian / Unit")
+        
+        st.divider()
+        st.subheader("Maklumat Report Card (Syarat Kelayakan)")
+        rc1, rc2 = st.columns(2)
+        r_tahun = rc1.text_input("Tahun Penilaian")
+        r_kump = rc2.text_input("Kumpulan Perkhidmatan")
+        
+        rc3, rc4 = st.columns(2)
+        r_tarikh = rc3.text_input("Tarikh Bermula Berkhidmat")
+        r_tempoh = rc4.text_input("Tempoh Berkhidmat (Tahun pada 31 Disember)")
+        r_rekod = st.text_input("Rekod Penerimaan APC", value="Tiada")
+        
+        st.markdown("**Semakan Syarat (Tanda jika Ya)**")
+        s1 = st.checkbox("Kakitangan bertaraf Tetap / Contract of Service (CoS)")
+        s2 = st.checkbox("Kakitangan adalah di Gred 14 dan ke bawah")
+        s3 = st.checkbox("Telah berkhidmat sekurang-kurangnya satu (1) tahun pada tahun penilaian")
+        s4 = st.checkbox("Bebas daripada tindakan disiplin / tatatertib")
+        
+        sc1, sc2 = st.columns(2)
+        s5 = sc1.checkbox("Markah LNPT (Tahun Penilaian) >= 85%")
+        m5 = sc1.text_input("Catatan / Markah LNPT Tahun Penilaian")
+        s6 = sc2.checkbox("Markah LNPT (Tahun Sebelum) >= 85%")
+        m6 = sc2.text_input("Catatan / Markah LNPT Tahun Sebelum")
+        
+        if st.form_submit_button("Simpan Calon", type="primary"):
+            if new_name:
+                add_info = json.dumps({
+                    "tahun_penilaian": r_tahun, "kump_perkhidmatan": r_kump, "tarikh_mula": r_tarikh,
+                    "tempoh_khidmat": r_tempoh, "rekod_apc": r_rekod, "s_tetap": s1, "s_gred14": s2,
+                    "s_setahun": s3, "s_disiplin": s4, "s_lnpt_semasa": s5, "m_lnpt_semasa": m5,
+                    "s_lnpt_sebelum": s6, "m_lnpt_sebelum": m6
+                })
+                with engine.begin() as conn:
+                    conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks, photo, additional_info) VALUES (:n, :t, :i, :l, :r, :p, :ai)"), 
+                                 {"n":new_name, "t":new_id, "i":new_inst, "l":new_gred, "r":new_bahagian, "p":new_photo.read() if new_photo else None, "ai":add_info})
+                st.cache_resource.clear(); st.success("✅ Telah Ditambah!"); time.sleep(1); st.rerun()
+            else:
+                st.error("Nama Calon adalah wajib.")
+
 @st.dialog("📝 Sunting Calon (Beserta Maklumat Kad Laporan)", width="large")
 def edit_applicant_dialog(engine, app_data):
     info = {}
@@ -380,20 +431,8 @@ def render_management(menu, engine, hash_password, delete_item):
         c1, c2 = st.columns(2)
         if c1.button("📚 Tambah Calon Berkelompok", use_container_width=True): bulk_add_applicants_dialog(engine)
         
-        with st.expander("➕ Tambah Calon Baru"):
-            with st.form("add_app_single", clear_on_submit=True):
-                p = st.file_uploader("Gambar", type=['jpg', 'jpeg', 'png'])
-                asm_id = st.text_input("No ID ASM")
-                n = st.text_input("Nama Calon*")
-                i = st.text_input("Jawatan")
-                gred = st.text_input("Gred")
-                b = st.text_input("Bahagian / Unit")
-                if st.form_submit_button("Simpan Calon", type="primary"):
-                    if n:
-                        with engine.begin() as conn:
-                            conn.execute(text("INSERT INTO applicants (name, proposal_title, institution, info_link, remarks, photo) VALUES (:n, :t, :i, :l, :r, :p)"), 
-                                         {"n":n, "t":asm_id, "i":i, "l":gred, "r":b, "p":p.read() if p else None})
-                        st.cache_resource.clear(); st.success("✅ Telah Ditambah!"); time.sleep(1); st.rerun()
+        if st.button("➕ Tambah Calon Baru", use_container_width=True):
+            add_applicant_dialog(engine)
 
         revs_df = pd.read_sql("SELECT username, full_name FROM reviewers", engine)
         assign_df = pd.read_sql("SELECT * FROM applicant_assignments", engine)
