@@ -231,6 +231,10 @@ def reset_data_dialog(engine):
             st.error("Sila taip 'RESET' dengan betul untuk pengesahan.")
 
 def render_dashboard(engine):
+    if st.session_state.get('report_card_app'):
+        render_report_card(engine, st.session_state.report_card_app)
+        return
+
     st.header("📊 Data Penilaian Semasa")
     
     col1, col2, col3 = st.columns(3)
@@ -279,28 +283,29 @@ def render_dashboard(engine):
                     """, unsafe_allow_html=True)
 
         st.divider()
-        st.subheader("🏁 Papan Pendahulu (Kedudukan)")
-        p2_reviews = pd.read_sql("SELECT applicant_name, responses FROM reviews", engine)
+        st.subheader("🖼️ Galeri Kad Laporan Calon")
         
-        if not p2_reviews.empty:
-            leaderboard_data = []
-            for _, r_row in p2_reviews.iterrows():
-                try:
-                    res = json.loads(r_row['responses'])
-                    leaderboard_data.append({
-                        "Calon": r_row['applicant_name'], 
-                        "Markah": int(res.get('total_score', 0))
-                    })
-                except: continue
-            
-            if leaderboard_data:
-                ld_df = pd.DataFrame(leaderboard_data)
-                final_ld = ld_df.groupby("Calon")["Markah"].mean().sort_values(ascending=False).reset_index()
-                final_ld["Markah"] = final_ld["Markah"].round().astype(int)
-                final_ld.index += 1
-                st.table(final_ld)
-            else: st.info("Belum ada markah dikira.")
-        else: st.info("Menunggu penghantaran...")
+        apps_df = pd.read_sql("SELECT name, proposal_title, institution FROM applicants ORDER BY name ASC", engine)
+        
+        if not apps_df.empty:
+            cols = st.columns(3)
+            for i, row in apps_df.iterrows():
+                app_name = row['name']
+                
+                with cols[i % 3]:
+                    st.markdown(f"""
+                        <div style='background-color:#F8FAFC; padding:15px; border-radius:8px; border:1px solid #E2E8F0; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);'>
+                            <h4 style='color:#1E293B; margin-top:0; margin-bottom:10px; font-size:16px;'>{app_name}</h4>
+                            <p style='color:#475569; font-size:13px; margin-bottom:5px;'>ID: {row['proposal_title'] or 'Tiada'}</p>
+                            <p style='color:#475569; font-size:13px; margin-bottom:15px;'>Jawatan: {row['institution'] or 'Tiada'}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if st.button("📄 Lihat Kad Laporan", key=f"btn_rc_dash_{i}", use_container_width=True):
+                        st.session_state.report_card_app = app_name
+                        st.rerun()
+        else:
+            st.info("Tiada calon didaftarkan.")
 
     except Exception as e:
         st.error(f"🚨 Ralat Papan Pemuka: {str(e)}")
