@@ -481,6 +481,29 @@ def render_management(menu, engine, hash_password, delete_item):
         st.divider()
         st.subheader("👥 Senarai Penilai")
         
+        with st.expander("✉️ Templat Emel Arahan (Untuk dihantar kepada Penilai)"):
+            st.markdown("Sila salin templat di bawah dan kemas kini butiran (Pautan, Nama Pengguna, Kata Laluan) sebelum menghantarnya kepada Pegawai Penilai yang telah didaftarkan:")
+            st.code("""Tajuk: Jemputan Sebagai Pegawai Penilai untuk Anugerah Perkhidmatan Cemerlang (APC) ASM 2025
+
+YBhg. Prof./Datuk/Dato'/Dr./Tuan/Puan,
+
+Dengan segala hormatnya perkara di atas adalah dirujuk.
+
+Dimaklumkan bahawa anda telah dilantik sebagai Pegawai Penilai bagi Penilaian 360 Darjah untuk Anugerah Perkhidmatan Cemerlang (APC) ASM 2025. 
+
+Sila log masuk ke dalam Sistem Penilaian APC-ASM menggunakan butiran berikut untuk memulakan sesi penilaian:
+
+Pautan Sistem: [Sila masukkan pautan URL sistem]
+Nama Pengguna: [Username Penilai]
+Kata Laluan: [Kata Laluan Penilai]
+
+Kerjasama dan perhatian YBhg. Prof./Datuk/Dato'/Dr./Tuan/Puan amatlah dihargai.
+
+Sekian, terima kasih.
+
+Urus Setia Program Pengiktirafan Pegawai
+Akademi Sains Malaysia""", language="text")
+        
         if st.button("📚 Tambah Penilai Berkelompok", use_container_width=True): bulk_add_reviewers_dialog(engine, hash_password)
         
         with st.expander("➕ Tambah Penilai Individu"):
