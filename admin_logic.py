@@ -285,16 +285,28 @@ def render_dashboard(engine):
         st.divider()
         st.subheader("🖼️ Galeri Kad Laporan Calon")
         
-        apps_df = pd.read_sql("SELECT name, proposal_title, institution FROM applicants ORDER BY name ASC", engine)
+        apps_df = pd.read_sql("SELECT name, proposal_title, institution, photo FROM applicants ORDER BY name ASC", engine)
         
         if not apps_df.empty:
             cols = st.columns(3)
             for i, row in apps_df.iterrows():
                 app_name = row['name']
                 
+                photo_html = ""
+                if row['photo']:
+                    try:
+                        b64_img = base64.b64encode(row['photo']).decode("utf-8")
+                        photo_html = f"<img src='data:image/jpeg;base64,{b64_img}' style='width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:15px;'/>"
+                    except:
+                        pass
+                
+                if not photo_html:
+                    photo_html = "<div style='width:100%; height:180px; background-color:#E2E8F0; border-radius:6px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; color:#94A3B8; font-size:12px;'>Tiada Gambar</div>"
+                
                 with cols[i % 3]:
                     st.markdown(f"""
-                        <div style='background-color:#F8FAFC; padding:15px; border-radius:8px; border:1px solid #E2E8F0; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);'>
+                        <div style='background-color:#F8FAFC; padding:15px; border-radius:8px; border:1px solid #E2E8F0; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align:center;'>
+                            {photo_html}
                             <h4 style='color:#1E293B; margin-top:0; margin-bottom:10px; font-size:16px;'>{app_name}</h4>
                             <p style='color:#475569; font-size:13px; margin-bottom:5px;'>ID: {row['proposal_title'] or 'Tiada'}</p>
                             <p style='color:#475569; font-size:13px; margin-bottom:15px;'>Jawatan: {row['institution'] or 'Tiada'}</p>
