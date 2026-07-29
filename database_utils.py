@@ -76,6 +76,8 @@ def init_db():
         conn.execute(text("CREATE TABLE IF NOT EXISTS phase2_reviews (id SERIAL PRIMARY KEY, reviewer_username TEXT, applicant_name TEXT, responses TEXT, final_recommendation TEXT, overall_justification TEXT, is_final BOOLEAN DEFAULT FALSE, submitted_at TEXT, updated_at TEXT, UNIQUE(reviewer_username, applicant_name))"))
 
         # Create Admin asal
+        conn.execute(text("CREATE TABLE IF NOT EXISTS archives (id SERIAL PRIMARY KEY, archive_name TEXT, archive_date TEXT, archive_data TEXT)"))
+        
         res = conn.execute(text("SELECT COUNT(*) FROM users")).fetchone()[0]
         if res == 0:
             pw = hash_password("admin123")

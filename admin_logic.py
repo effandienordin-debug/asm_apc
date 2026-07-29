@@ -126,11 +126,70 @@ def bulk_add_reviewers_dialog(engine, hash_password):
         st.cache_resource.clear(); st.success("✅ Selesai!"); time.sleep(1); st.rerun()
 
 
+@st.dialog("📦 Arkib Data (Archive)")
+def archive_data_dialog(engine):
+    st.warning("Fungsi ini akan menyimpan salinan semua data semasa (Calon, Tugasan, Keputusan Penilaian) ke dalam pangkalan data arkib.")
+    archive_name = st.text_input("Nama Arkib (Contoh: Penilaian APC 2024)", value=f"Arkib {time.strftime('%Y-%m-%d')}")
+    if st.button("Simpan ke Arkib", type="primary"):
+        with engine.begin() as conn:
+            import json
+            import pandas as pd
+            import base64
+            # fetch data
+            apps = pd.read_sql("SELECT * FROM applicants", conn).to_dict(orient="records")
+            assigns = pd.read_sql("SELECT * FROM applicant_assignments", conn).to_dict(orient="records")
+            revs = pd.read_sql("SELECT * FROM reviews", conn).to_dict(orient="records")
+            
+            for a in apps:
+                if 'photo' in a and a['photo']:
+                    try:
+                        a['photo'] = base64.b64encode(a['photo']).decode('utf-8')
+                    except:
+                        a['photo'] = None
+                else:
+                    a['photo'] = None
+            
+            archive_data = json.dumps({
+                "applicants": apps,
+                "applicant_assignments": assigns,
+                "reviews": revs
+            }, default=str)
+            
+            conn.execute(text("INSERT INTO archives (archive_name, archive_date, archive_data) VALUES (:n, :d, :data)"), 
+                         {"n": archive_name, "d": time.strftime("%Y-%m-%d %H:%M:%S"), "data": archive_data})
+        st.success("✅ Data berjaya diarkibkan!")
+        time.sleep(1)
+        st.rerun()
+
+@st.dialog("⚠️ Reset Data (Kosongkan)")
+def reset_data_dialog(engine):
+    st.error("AMARAN: Tindakan ini akan MEMADAM semua data calon, tugasan penilai, dan keputusan penilaian semasa.")
+    st.warning("Pastikan anda telah membuat Arkib (Archive) terlebih dahulu sebelum meneruskan tindakan ini.")
+    confirm = st.text_input("Taip 'RESET' untuk mengesahkan tindakan ini:")
+    if st.button("Padam Semua Data Semasa", type="primary"):
+        if confirm == 'RESET':
+            with engine.begin() as conn:
+                conn.execute(text("DELETE FROM reviews"))
+                conn.execute(text("DELETE FROM applicant_assignments"))
+                conn.execute(text("DELETE FROM applicants"))
+            st.cache_resource.clear()
+            st.success("✅ Data semasa telah berjaya dipadam!")
+            time.sleep(1)
+            st.rerun()
+        else:
+            st.error("Sila taip 'RESET' dengan betul untuk pengesahan.")
+
 def render_dashboard(engine):
     st.header("📊 Data Penilaian Semasa")
-    if st.button("🔄 Kemaskini Data Papan Pemuka"):
+    
+    col1, col2, col3 = st.columns(3)
+    if col1.button("🔄 Kemaskini Papan Pemuka", use_container_width=True):
         st.cache_resource.clear()
         st.rerun()
+    if col2.button("📦 Arkib Data Lama", use_container_width=True):
+        archive_data_dialog(engine)
+    if col3.button("🗑️ Reset Data Semasa", use_container_width=True):
+        reset_data_dialog(engine)
         
     query_p1 = text("""
         SELECT 
