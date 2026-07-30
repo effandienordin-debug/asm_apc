@@ -441,9 +441,9 @@ def render_management(menu, engine, hash_password, delete_item):
         render_report_card(engine, st.session_state.report_card_app)
         return
 
-    if menu == "Pengurusan Penilaian":
+    if menu == "Pengurusan Calon APC":
         apps_df = pd.read_sql("SELECT * FROM applicants ORDER BY id ASC", engine)
-        st.header(f"📋 Pengurusan Penilaian (Jumlah: {len(apps_df)})")
+        st.header(f"📋 Pengurusan Calon APC (Jumlah: {len(apps_df)})")
         
         c1, c2 = st.columns(2)
         if c1.button("📚 Tambah Calon Berkelompok", use_container_width=True): bulk_add_applicants_dialog(engine)

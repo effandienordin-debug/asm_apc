@@ -128,7 +128,7 @@ with st.sidebar:
         st.session_state.report_card_app = None
 
     if st.session_state.role == "Admin":
-        menu = st.radio("Navigasi", ["Papan Pemuka", "Laporan", "Pengurusan Penilaian", "Pengurusan Penilai"], on_change=clear_transient_states)
+        menu = st.radio("Navigasi", ["Papan Pemuka", "Laporan", "Pengurusan Calon APC", "Pengurusan Penilai"], on_change=clear_transient_states)
     else:
         menu = st.radio("Navigasi", ["Penilaian"], on_change=clear_transient_states)
 
@@ -164,7 +164,7 @@ with st.sidebar:
 # Guna engine sedia ada (connection pool)
 if menu == "Papan Pemuka": render_dashboard(engine)
 elif menu == "Laporan": render_reporting(engine)
-elif menu in ["Pengurusan Penilai", "Pengurusan Penilaian"]: 
+elif menu in ["Pengurusan Penilai", "Pengurusan Calon APC"]: 
     render_management(menu, engine, hash_password, delete_item)
 elif menu == "Penilaian":
     render_review_form(engine, get_malaysia_time, render_apc_evaluation_form)
