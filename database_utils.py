@@ -65,6 +65,8 @@ def init_db():
         try:
             conn.execute(text("ALTER TABLE applicants ADD COLUMN IF NOT EXISTS additional_info TEXT"))
             conn.execute(text("ALTER TABLE reviewers ADD COLUMN IF NOT EXISTS kumpulan_pegawai TEXT"))
+            conn.execute(text("ALTER TABLE reviewers ADD COLUMN IF NOT EXISTS has_consented BOOLEAN DEFAULT FALSE"))
+            conn.execute(text("ALTER TABLE reviewers ADD COLUMN IF NOT EXISTS consented_at TEXT"))
         except:
             pass
         # Phase 1

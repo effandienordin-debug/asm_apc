@@ -9,6 +9,8 @@ def get_report_data(_engine):
         SELECT 
             COALESCE(rev.full_name, r.reviewer_username) as reviewer_name,
             rev.kumpulan_pegawai,
+            rev.has_consented,
+            rev.consented_at,
             r.applicant_name,
             r.responses
         FROM reviews r
@@ -29,8 +31,14 @@ def get_report_data(_engine):
         df = df.rename(columns={
             'reviewer_name': 'Nama Penilai',
             'kumpulan_pegawai': 'Kumpulan Pegawai',
+            'has_consented': 'Telah Bersetuju (Kerahsiaan)',
+            'consented_at': 'Tarikh Persetujuan',
             'applicant_name': 'Menilai Siapa'
         })
+        
+        if 'Telah Bersetuju (Kerahsiaan)' in df.columns:
+            df['Telah Bersetuju (Kerahsiaan)'] = df['Telah Bersetuju (Kerahsiaan)'].apply(lambda x: 'Ya' if x is True or str(x).lower() == 'true' else 'Belum')
+            
         
         df['Daya Kepimpinan'] = parsed.apply(lambda x: int(x.get('kepimpinan', 0)))
         df['Semangat Berpasukan'] = parsed.apply(lambda x: int(x.get('pasukan', 0)))
@@ -42,7 +50,7 @@ def get_report_data(_engine):
         df = df.drop(columns=['responses'])
         
         # Susun semula lajur (Reorder columns)
-        cols = ['Nama Penilai', 'Kumpulan Pegawai', 'Menilai Siapa', 'Daya Kepimpinan', 'Semangat Berpasukan', 'Kemahiran Interpersonal', 'Akauntabiliti', 'Inovatif', 'Jumlah Markah']
+        cols = ['Nama Penilai', 'Kumpulan Pegawai', 'Telah Bersetuju (Kerahsiaan)', 'Tarikh Persetujuan', 'Menilai Siapa', 'Daya Kepimpinan', 'Semangat Berpasukan', 'Kemahiran Interpersonal', 'Akauntabiliti', 'Inovatif', 'Jumlah Markah']
         df = df[[c for c in cols if c in df.columns]]
         
     return df
