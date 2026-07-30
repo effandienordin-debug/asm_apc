@@ -20,6 +20,12 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     table_reviews = "reviews"
     phase_name = "Penilaian 360 Darjah untuk calon APC-2025"
 
+    if not st.session_state.get('reviewer_consented', False):
+        with engine.connect() as conn:
+            res_c = conn.execute(text("SELECT has_consented FROM reviewers WHERE username = :u"), {"u": st.session_state.username}).fetchone()
+            if res_c and res_c[0]:
+                st.session_state.reviewer_consented = True
+
     st.markdown(f"## 📋 {phase_name}")
     st.divider()
 
@@ -29,7 +35,8 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
         col_greet.markdown(f"### Selamat kembali, {st.session_state.full_name}!")
         col_greet.caption(f"🔬 Log masuk sebagai: {st.session_state.username} | Peranan: Penilai | {phase_name}")
 
-    st.warning("""**Berikut nota penting yang perlu diambil perhatian bagi setiap penilai:**
+    if st.session_state.get('reviewer_consented', False):
+        st.warning("""**Berikut nota penting yang perlu diambil perhatian bagi setiap penilai:**
 - Sila isi ruang kosong dengan SATU NOMBOR berdasarkan skala 1 hingga 5 (tidak memuaskan-cemerlang) dan terdapat lima (5) aspek yang akan dinilai.
 - Tidak berkongsi apa-apa maklumat berkaitan Penilaian 360° (APC-ASM) ini kepada mana-mana kakitangan/individu. Penilaian perlu dilakukan secara sulit supaya proses penilaian dapat dilaksanakan dengan lebih objektif, fokus dan teliti.
 - Sila lengkapkan kesemua penilaian calon anda dan simpannya sebagai draf terlebih dahulu. **Butang "🚀 KUNCI KESEMUA PENILAIAN" hanya akan muncul di ruangan utama (Galeri Calon) setelah kesemua calon selesai dinilai.** Jika anda sudah berpuas hati dan muktamad dengan markah yang diberikan, klik butang tersebut untuk penghantaran rasmi.""")
@@ -88,12 +95,6 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
             st.rerun()
             
     else:
-        if not st.session_state.get('reviewer_consented', False):
-            with engine.connect() as conn:
-                res_c = conn.execute(text("SELECT has_consented FROM reviewers WHERE username = :u"), {"u": st.session_state.username}).fetchone()
-                if res_c and res_c[0]:
-                    st.session_state.reviewer_consented = True
-
         if not st.session_state.get('reviewer_consented', False):
             with st.container(border=True):
                 st.markdown("**Saya dengan ini bersetuju untuk :**")
