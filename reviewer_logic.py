@@ -55,6 +55,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
 
             col_txt.subheader(name)
             col_txt.markdown(f"**Jawatan:** {app['institution'] if app['institution'] else 'N/A'}")
+            col_txt.markdown(f"**Bahagian/Unit:** {app['remarks'] if app['remarks'] else 'N/A'}")
 
         # --- EVALUATION FORM ---
         res = render_apc_evaluation_form(prev_resp, rev.iloc[0].to_dict() if not rev.empty else {}, disabled=is_locked)
@@ -110,6 +111,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
 
                                 st.write(f"**{row['name']}**")
                                 st.caption(f"💼 Jawatan: {row['institution'] if row['institution'] else 'N/A'}")
+                                st.caption(f"🏢 Bahagian/Unit: {row['remarks'] if row['remarks'] else 'N/A'}")
 
                                 if row['name'] in reviews_lookup:
                                     r_data = reviews_lookup[row['name']]
