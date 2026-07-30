@@ -93,5 +93,18 @@ def render_reporting(engine):
     )
 
     # --- 5. DATA PREVIEW ---
-    st.subheader("📋 Ringkasan Data")
-    st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+    st.subheader("📋 Ringkasan Data Mengikut Penilai")
+    
+    if filtered_df.empty:
+        st.info("Tiada data ditemui.")
+    else:
+        grouped = filtered_df.groupby('Nama Penilai')
+        for penilai, group_df in grouped:
+            # Dapatkan info kumpulan pegawai jika ada
+            kump = group_df['Kumpulan Pegawai'].iloc[0] if 'Kumpulan Pegawai' in group_df.columns else ''
+            kump_str = f" ({kump})" if pd.notna(kump) and kump != 'Tiada Kumpulan' and kump != '' else ""
+            
+            with st.expander(f"👤 Penilai: {penilai}{kump_str} - {len(group_df)} Calon Dinilai", expanded=False):
+                # Buang lajur Nama Penilai dari dataframe kecil ini sebab ia sudah ada pada tajuk
+                display_df = group_df.drop(columns=['Nama Penilai'])
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
