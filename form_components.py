@@ -2,6 +2,42 @@ import streamlit as st
 from database_utils import get_radio_index
 
 def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
+    # --- CSS UNTUK BESARKAN & STANDARDKAN FONT SIZE ---
+    st.markdown("""
+        <style>
+        /* Tajuk dan Subtajuk */
+        div[data-testid="stMarkdownContainer"] h3 {
+            font-size: 24px !important;
+            font-weight: 700 !important;
+        }
+        /* Teks biasa, info, dan caption */
+        div[data-testid="stMarkdownContainer"] p, 
+        div[data-testid="stCaptionContainer"] p {
+            font-size: 18px !important;
+            line-height: 1.6 !important;
+        }
+        /* Label soalan (Radio utama) */
+        div[data-testid="stWidgetLabel"] p {
+            font-size: 20px !important;
+            font-weight: 600 !important;
+        }
+        /* Pilihan jawapan (Radio options) */
+        div[role="radiogroup"] label p {
+            font-size: 18px !important;
+            font-weight: 400 !important;
+        }
+        /* Tajuk Expander (Rubrik) */
+        div[data-testid="stExpander"] details summary p {
+            font-size: 18px !important;
+            font-weight: 600 !important;
+        }
+        /* Jadual dalam Rubrik */
+        table th, table td {
+            font-size: 16px !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.subheader("📋 Penilaian 360 Darjah untuk calon APC-2025")
     st.info("Sila berikan markah (1 - 5) berdasarkan kriteria kecekapan utama di bawah. Markah akan dikira secara automatik.")
     
