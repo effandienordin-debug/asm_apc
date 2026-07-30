@@ -90,7 +90,7 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     
     # 1. Daya Kepimpinan
     st.markdown("### 1. Daya Kepimpinan")
-    st.caption("Pegawai berkebolehan memimpin dengan cara yang positif, membina dan memberi arahan mengikut polisi, tatacara dan deskripsi kerja organisasi.")
+    st.markdown("<p style='color:#111111; font-size:18px; font-weight:600; line-height:1.5;'>Pegawai berkebolehan memimpin dengan cara yang positif, membina dan memberi arahan mengikut polisi, tatacara dan deskripsi kerja organisasi.</p>", unsafe_allow_html=True)
     st.markdown("""
 **📖 Rubrik Terperinci:**
 | Skala | Keterangan |
@@ -108,7 +108,7 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     
     # 2. Semangat Berpasukan
     st.markdown("### 2. Semangat Berpasukan")
-    st.caption("Pegawai berkeupayaan untuk bekerja secara berkumpulan dan menjalankan tugas secara bekerjasama bagi mencapai matlamat dan menyelesaikan tugas dalam satu pasukan.")
+    st.markdown("<p style='color:#111111; font-size:18px; font-weight:600; line-height:1.5;'>Pegawai berkeupayaan untuk bekerja secara berkumpulan dan menjalankan tugas secara bekerjasama bagi mencapai matlamat dan menyelesaikan tugas dalam satu pasukan.</p>", unsafe_allow_html=True)
     st.markdown("""
 **📖 Rubrik Terperinci:**
 | Skala | Keterangan |
@@ -126,7 +126,7 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     
     # 3. Kemahiran Interpersonal
     st.markdown("### 3. Kemahiran Interpersonal")
-    st.caption("Pegawai berkeupayaan untuk berinteraksi dengan sikap dan tingkah laku yang positif termasuk cara berkomunikasi yang efektif, penyelesaian masalah yang baik dan kemahiran rundingan yang berkesan.")
+    st.markdown("<p style='color:#111111; font-size:18px; font-weight:600; line-height:1.5;'>Pegawai berkeupayaan untuk berinteraksi dengan sikap dan tingkah laku yang positif termasuk cara berkomunikasi yang efektif, penyelesaian masalah yang baik dan kemahiran rundingan yang berkesan.</p>", unsafe_allow_html=True)
     st.markdown("""
 **📖 Rubrik Terperinci:**
 | Skala | Keterangan |
@@ -144,7 +144,7 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     
     # 4. Akauntabiliti
     st.markdown("### 4. Akauntabiliti")
-    st.caption("Pegawai bertanggungjawab ke atas tugasan atau keputusan yang dilakukan dan bersedia untuk menerima kesan dan implikasi dari suatu perbuatan atas tindakan yang dilakukannya.")
+    st.markdown("<p style='color:#111111; font-size:18px; font-weight:600; line-height:1.5;'>Pegawai bertanggungjawab ke atas tugasan atau keputusan yang dilakukan dan bersedia untuk menerima kesan dan implikasi dari suatu perbuatan atas tindakan yang dilakukannya.</p>", unsafe_allow_html=True)
     st.markdown("""
 **📖 Rubrik Terperinci:**
 | Skala | Keterangan |
@@ -162,7 +162,7 @@ def render_apc_evaluation_form(prev_responses, rev_metadata, disabled=False):
     
     # 5. Inovatif
     st.markdown("### 5. Inovatif")
-    st.caption("Pegawai berkeupayaan dan berkebolehan menjadi kreatif dan menunjukkan inisiatif untuk menjana pembaharuan atau penambahbaikan organisasi.")
+    st.markdown("<p style='color:#111111; font-size:18px; font-weight:600; line-height:1.5;'>Pegawai berkeupayaan dan berkebolehan menjadi kreatif dan menunjukkan inisiatif untuk menjana pembaharuan atau penambahbaikan organisasi.</p>", unsafe_allow_html=True)
     st.markdown("""
 **📖 Rubrik Terperinci:**
 | Skala | Keterangan |
