@@ -88,6 +88,20 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
             st.rerun()
             
     else:
+        if not st.session_state.get('reviewer_consented', False):
+            with st.container(border=True):
+                st.markdown("**Saya dengan ini bersetuju untuk :**")
+                st.markdown("""
+- Mengambil bahagian dalam proses Penilaian 360° (APC-2025) untuk calon APC-2025.
+- Memelihara kerahsiaan semua maklumat, markah dan keputusan yang berkaitan dengan proses Penilaian 360° (APC-2025).
+- Tidak mendedahkan, berkongsi atau membincangkan sebarang maklumat yang diperoleh sepanjang Penilaian 360° (APC-2025).
+- Mematuhi semua garis panduan, prosedur dan etika yang ditetapkan bagi Penilaian 360° (APC-2025).
+""")
+                if st.checkbox("Saya telah membaca, memahami dan bersetuju dengan pengakuan di atas."):
+                    st.session_state.reviewer_consented = True
+                    st.rerun()
+            return
+
         # --- GALLERY VIEW ---
         apps = get_assigned_applicants(engine, st.session_state.username)
 
