@@ -32,7 +32,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     with st.container(border=True):
         col_icon, col_greet = st.columns([1, 10])
         col_icon.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=65)
-        col_greet.markdown(f"### Selamat kembali, {st.session_state.full_name}!")
+        col_greet.markdown(f"### Selamat datang, {st.session_state.full_name}!")
         col_greet.caption(f"🔬 Log masuk sebagai: {st.session_state.username} | Peranan: Penilai | {phase_name}")
 
     if st.session_state.get('reviewer_consented', False):
