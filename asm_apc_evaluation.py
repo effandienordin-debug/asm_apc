@@ -21,6 +21,7 @@ engine = get_engine()
 @st.cache_resource
 def startup_sequence():
     init_db.__wrapped__() # Bypass cache to ensure ALTER TABLE runs
+    # Cache invalidated for has_consented DB schema update
     return True
 
 startup_sequence()
