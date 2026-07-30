@@ -154,6 +154,7 @@ with st.sidebar:
         st.session_state.username = None
         st.session_state.role = None
         st.session_state.full_name = None
+        st.session_state.reviewer_consented = False
         
         # 5. Rerun
         time.sleep(0.2)
