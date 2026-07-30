@@ -20,6 +20,8 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
     table_reviews = "reviews"
     phase_name = "Penilaian 360 Darjah untuk calon APC-2025"
 
+    apps = get_assigned_applicants(engine, st.session_state.username)
+
     if not st.session_state.get('reviewer_consented', False):
         with engine.connect() as conn:
             res_c = conn.execute(text("SELECT has_consented FROM reviewers WHERE username = :u"), {"u": st.session_state.username}).fetchone()
@@ -35,7 +37,7 @@ def render_review_form(engine, get_malaysia_time, render_apc_evaluation_form):
         col_greet.markdown(f"### Selamat datang, {st.session_state.full_name}!")
         col_greet.caption(f"🔬 Log masuk sebagai: {st.session_state.username} | Peranan: Penilai | {phase_name}")
 
-    if st.session_state.get('reviewer_consented', False):
+    if st.session_state.get('reviewer_consented', False) and not apps.empty:
         st.warning("""**Berikut nota penting yang perlu diambil perhatian bagi setiap penilai:**
 - Sila isi ruang kosong dengan SATU NOMBOR berdasarkan skala 1 hingga 5 (tidak memuaskan-cemerlang) dan terdapat lima (5) aspek yang akan dinilai.
 - Tidak berkongsi apa-apa maklumat berkaitan Penilaian 360° (APC-ASM) ini kepada mana-mana kakitangan/individu. Penilaian perlu dilakukan secara sulit supaya proses penilaian dapat dilaksanakan dengan lebih objektif, fokus dan teliti.
